@@ -1,3 +1,6 @@
+__authors__ = "Runzhe Yang"
+__email__ = ""
+
 """
     Stance vector modules
     
