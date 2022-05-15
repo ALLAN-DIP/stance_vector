@@ -1,5 +1,5 @@
 __authors__ = "Runzhe Yang"
-__email__ = ""
+__email__ = "runzhey@cs.princeton.edu"
 
 """
     Stance vector modules
