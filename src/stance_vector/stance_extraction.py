@@ -242,10 +242,10 @@ class ScoreBasedStance(StanceExtraction):
         #     if n in self.nations:
         #         scores[n] = int(sc_info[i+1])
         for n in self.nations:
-            scores[n] = self.game.powers[n].centers if self.game.powers[n].centers else 0
+            scores[n] = len(self.game.powers[n].centers) if self.game.powers[n].centers else 0
         return scores
     
-    def get_stance(self, game_rec, message=None):
+    def get_stance(self):
         """
             Extract turn-level subjective stance of nation n on nation k.
                 game_rec: the turn-level JSON log of a game,
@@ -253,7 +253,7 @@ class ScoreBasedStance(StanceExtraction):
             Returns a bi-level dictionary of stance score stance[n][k]
         """
         # extract territory info
-        self.scores = self.extract_scores(game_rec)
+        self.scores = self.extract_scores()
 
         self.stance = {n: {k: np.sign(self.scores[n]-self.scores[k]) if self.scores[n] > 0 else 0
                          for k in self.nations}
