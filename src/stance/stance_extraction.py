@@ -15,12 +15,13 @@ class StanceExtraction(ABC):
     """
         Abstract Base Class for stance vector extraction
     """
-    def __init__(self, my_identity, nations) -> None:
+    def __init__(self, my_identity, game) -> None:
         self.identity = my_identity
-        self.nations = nations
+        self.nations = list(game.get_map_power_names())
         self.current_round = 0
         self.territories = {n:[] for n in self.nations}
         self.stance = None
+        self.game = game
         
     def extract_terr(self, game_rec):
         """
@@ -229,17 +230,19 @@ class ScoreBasedStance(StanceExtraction):
         self.scores = None
         self.stance = None
         
-    def extract_scores(self, game_rec):
+    def extract_scores(self):
         """
             Extract scores at the end of each round.
                 game_rec: the turn-level JSON log of a game,
             Returns a dict of scores for all nations
         """
         scores = {n:0 for n in self.nations}
-        sc_info = game_rec['sc'].split()
-        for i, n in enumerate(sc_info):
-            if n in self.nations:
-                scores[n] = int(sc_info[i+1])
+        # sc_info = game_rec['sc'].split()
+        # for i, n in enumerate(sc_info):
+        #     if n in self.nations:
+        #         scores[n] = int(sc_info[i+1])
+        for n in self.nations:
+            scores[n] = self.game.powers[n].centers if self.game.powers[n].centers else 0
         return scores
     
     def get_stance(self, game_rec, message=None):
