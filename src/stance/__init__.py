@@ -1,1 +1,2 @@
-from baseline_bots.bots import *
+from stance import ActionBasedStance
+from stance import ScoreBasedStance
