@@ -1,2 +1,2 @@
-from stance import ActionBasedStance
-from stance import ScoreBasedStance
+from stance_extraction import ActionBasedStance
+from stance_extraction import ScoreBasedStance
