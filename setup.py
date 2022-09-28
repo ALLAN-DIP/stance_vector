@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="DAIDE",
+    name="stance_vector",
     version="0.0.1",
     author="Kartik Shenoy",
     author_email="kartik.shenoyy@gmail.com",
