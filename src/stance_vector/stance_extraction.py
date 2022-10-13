@@ -64,7 +64,7 @@ class ActionBasedStance(StanceExtraction):
                  invasion_coef=1.0, conflict_coef=0.5,
                  invasive_support_coef=1.0, conflict_support_coef=0.5,
                  friendly_coef=1.0) -> None:
-        super().__init__(my_identity: str, nations: str)
+        super().__init__(my_identity, nations)
         # hyperparametes weighting different actions
         self.alpha1 = invasion_coef
         self.alpha2 = conflict_coef
