@@ -1,6 +1,8 @@
 __authors__ = "Runzhe Yang"
 __email__ = ""
 
+from diplomacy import Game
+
 """
     Stance vector modules
     
