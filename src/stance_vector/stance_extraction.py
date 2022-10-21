@@ -34,7 +34,16 @@ class StanceExtraction(ABC):
         # terr = {n:[] for n in self.nations}
         # for city in game_rec["territories"].keys():
         #     terr[game_rec["territories"][city]].append(city)
-        terr = {n: self.game.get_orderable_locations(n) for n in self.nations}
+        # terr = {n: self.game.get_orderable_locations(n) for n in self.nations}
+        def unit2loc(units):
+            locs = []
+            for u in units:
+                locs.append(u[2:5])
+            return locs
+        # obtain orderable location from the previous state
+        terr = {n: unit2loc(self.game.get_phase_history()[-1].state['units'][n]) for n in self.nations}
+        terr = {n: terr[n]+unit2loc(self.game.get_phase_history()[-1].state['retreats'][n]) for n in self.nations}
+        terr = {n: list(np.unique(terr[n]+self.game.get_phase_history()[-1].state['centers'][n])) for n in self.nations}
         return terr
     
     @abstractmethod
@@ -65,11 +74,12 @@ class ActionBasedStance(StanceExtraction):
     def __init__(self, my_identity, game,
                  invasion_coef=1.0, conflict_coef=0.5,
                  invasive_support_coef=1.0, conflict_support_coef=0.5,
-                 friendly_coef=1.0) -> None:
+                 friendly_coef=1.0, discount_factor=0.5) -> None:
         super().__init__(my_identity, game)
         # hyperparametes weighting different actions
         self.alpha1 = invasion_coef
         self.alpha2 = conflict_coef
+        self.discount = discount_factor
         self.beta1 = invasive_support_coef
         self.beta2 = conflict_support_coef
         self.gamma1 = friendly_coef
@@ -128,7 +138,7 @@ class ActionBasedStance(StanceExtraction):
         #                 my_targets.append(target)
         
         my_targets = []
-        my_orders = self.game.get_orders(nation)
+        my_orders = self.game.get_phase_history()[-1].orders[nation]
         for order in my_orders:
             order = self.order_parser(order)
             if order[0] == 'MOVE':
@@ -156,7 +166,7 @@ class ActionBasedStance(StanceExtraction):
         
         for opp in self.nations:
             if opp == nation: continue
-            opp_orders = self.game.get_orders(opp)
+            opp_orders = self.game.get_phase_history()[-1].orders[opp]
             if len(opp_orders) == 0: continue
             for order in opp_orders:
                 order = self.order_parser(order)
@@ -214,7 +224,7 @@ class ActionBasedStance(StanceExtraction):
 
         for opp in self.nations:
             if opp == nation: continue
-            opp_orders = self.game.get_orders(opp)
+            opp_orders = self.game.get_phase_history()[-1].orders[opp]
             if len(opp_orders) == 0: continue
             for order in opp_orders:
                 order = self.order_parser(order)
@@ -268,7 +278,8 @@ class ActionBasedStance(StanceExtraction):
         
         for opp in self.nations:
             if opp == nation: continue
-            opp_orders = self.game.get_orders(opp)
+            opp_orders = self.game.get_phase_history()[-1].orders[opp]
+
             if len(opp_orders) == 0: continue
             for order in opp_orders:
                 order = self.order_parser(order)
@@ -316,9 +327,14 @@ class ActionBasedStance(StanceExtraction):
         for n in self.nations:
             friendship_to[n], friendly_sup_to[n] = self.extract_friendly_supports(n)
 
-        self.stance = {n: {k: -hostililty_to[n][k] -hostililty_s_to[n][k] +friendship_to[n][k]
-                         for k in self.nations}
-                  for n in self.nations}
+        if self.stance:
+            self.stance = {n: {k: self.discount * self.stance[n][k] - hostililty_to[n][k] -hostililty_s_to[n][k] +friendship_to[n][k]
+                             for k in self.nations}
+                      for n in self.nations}
+        else:
+            self.stance = {n: {k: -hostililty_to[n][k] -hostililty_s_to[n][k] +friendship_to[n][k]
+                             for k in self.nations}
+                      for n in self.nations}
     
         return self.stance
 
