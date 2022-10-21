@@ -22,7 +22,7 @@ class StanceExtraction(ABC):
         self.nations = list(game.get_map_power_names())
         self.current_round = 0
         self.territories = {n:[] for n in self.nations}
-        self.stance = None
+        self.stance = {n: {k: 0 for k in self.nations} for n in self.nations}
         self.game = game
         
     # def extract_terr(self, game_rec):
