@@ -3,6 +3,7 @@ __email__ = ""
 
 from diplomacy import Game
 from copy import deepcopy
+from diplomacy.utils import strings
 
 """
     Stance vector modules
