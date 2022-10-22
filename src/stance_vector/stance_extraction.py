@@ -83,7 +83,34 @@ class ActionBasedStance(StanceExtraction):
         self.beta1 = invasive_support_coef
         self.beta2 = conflict_support_coef
         self.gamma1 = friendly_coef
-    
+
+        def __game_deepcopy__(self):
+            """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
+            game = self.game
+            if game.__class__.__name__ != "Game":
+                cls = list(game.__class__.__bases__)[0]
+                result = cls.__new__(cls)
+                # Deep copying
+                for key in game._slots:
+                    if key in [
+                        "map",
+                        "renderer",
+                        "powers",
+                        "channel",
+                        "notification_callbacks",
+                        "data",
+                        "__weakref__",
+                    ]:
+                        continue
+                    setattr(result, key, deepcopy(getattr(game, key)))
+                setattr(result, "map", game.map)
+                setattr(result, "powers", {})
+                for power in game.powers.values():
+                    result.powers[power.name] = deepcopy(power)
+                    setattr(result.powers[power.name], 'game', result)
+                result.role = strings.SERVER_TYPE
+                self.game = result
+
     def order_parser(self, order: str):
         """ 
             Dipnet order syntax based on 
@@ -305,7 +332,8 @@ class ActionBasedStance(StanceExtraction):
                 messages is not used
             Returns a bi-level dictionary of stance score stance[n][k]
         """
-        
+        #deepcopy NetworkGame to Game 
+        self.__game_deepcopy__()
         # extract territory info
         # self.territories = self.extract_terr(game_rec)
         self.territories = self.extract_terr()
