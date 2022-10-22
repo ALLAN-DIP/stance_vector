@@ -2,6 +2,7 @@ __authors__ = "Runzhe Yang"
 __email__ = ""
 
 from diplomacy import Game
+from copy import deepcopy
 
 """
     Stance vector modules
