@@ -24,7 +24,7 @@ class StanceExtraction(ABC):
         self.nations = list(game.get_map_power_names())
         self.current_round = 0
         self.territories = {n:[] for n in self.nations}
-        self.stance = {n: {k: 0.00001 for k in self.nations} for n in self.nations}
+        self.stance = {n: {k: 0.1 for k in self.nations} for n in self.nations}
         self.game = game
         
     # def extract_terr(self, game_rec):
@@ -43,9 +43,10 @@ class StanceExtraction(ABC):
                 locs.append(u[2:5])
             return locs
         # obtain orderable location from the previous state
-        terr = {n: unit2loc(self.game.get_phase_history()[-1].state['units'][n]) for n in self.nations}
-        terr = {n: terr[n]+unit2loc(self.game.get_phase_history()[-1].state['retreats'][n]) for n in self.nations}
-        terr = {n: list(np.unique(terr[n]+self.game.get_phase_history()[-1].state['centers'][n])) for n in self.nations}
+        m_phase_data = self.get_prev_m_phase()
+        terr = {n: unit2loc(m_phase_data.state['units'][n]) for n in self.nations}
+        terr = {n: terr[n]+unit2loc(m_phase_data.state['retreats'][n]) for n in self.nations}
+        terr = {n: list(np.unique(terr[n]+m_phase_data.state['centers'][n])) for n in self.nations}
         return terr
 
     def get_prev_m_phase(self):
