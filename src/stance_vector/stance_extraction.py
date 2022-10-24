@@ -107,26 +107,29 @@ class ActionBasedStance(StanceExtraction):
         if game.__class__.__name__ != "Game":
             cls = list(game.__class__.__bases__)[0]
             result = cls.__new__(cls)
-            # Deep copying
-            for key in game._slots:
-                if key in [
-                    "map",
-                    "renderer",
-                    "powers",
-                    "channel",
-                    "notification_callbacks",
-                    "data",
-                    "__weakref__",
-                ]:
-                    continue
-                setattr(result, key, deepcopy(getattr(game, key)))
-            setattr(result, "map", game.map)
-            setattr(result, "powers", {})
-            for power in game.powers.values():
-                result.powers[power.name] = deepcopy(power)
-                setattr(result.powers[power.name], 'game', result)
-            result.role = strings.SERVER_TYPE
-            self.game = result
+        else:
+            cls = game.__class__
+            result = cls.__new__(cls)
+        # Deep copying
+        for key in game._slots:
+            if key in [
+                "map",
+                "renderer",
+                "powers",
+                "channel",
+                "notification_callbacks",
+                "data",
+                "__weakref__",
+            ]:
+                continue
+            setattr(result, key, deepcopy(getattr(game, key)))
+        setattr(result, "map", game.map)
+        setattr(result, "powers", {})
+        for power in game.powers.values():
+            result.powers[power.name] = deepcopy(power)
+            setattr(result.powers[power.name], 'game', result)
+        result.role = strings.SERVER_TYPE
+        self.game = result
 
     def order_parser(self, order: str):
         """ 
