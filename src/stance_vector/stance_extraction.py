@@ -127,6 +127,7 @@ class ActionBasedStance(StanceExtraction):
                 setattr(result.powers[power.name], 'game', result)
             result.role = strings.SERVER_TYPE
             self.game = result
+            print('network to game')
 
     def order_parser(self, order: str):
         """ 
@@ -182,6 +183,7 @@ class ActionBasedStance(StanceExtraction):
         #                 my_targets.append(target)
 
         m_phase_data = self.get_prev_m_phase()
+        print('get m phase: ',  m_phase_data.name)
 
         my_targets = []
         my_orders = m_phase_data.orders[nation]
@@ -248,6 +250,7 @@ class ActionBasedStance(StanceExtraction):
         hostile_supports = []
         conflit_supports = []
         m_phase_data = self.get_prev_m_phase()
+        print('get m phase: ',  m_phase_data.name)
 
         # extract other's hostile MOVEs
         # for opp in self.nations:
@@ -306,7 +309,8 @@ class ActionBasedStance(StanceExtraction):
         """
         friendship = {n:0 for n in self.nations}
         friendly_supports = []
-        m_phase_data = self.get_prev_m_phase()    
+        m_phase_data = self.get_prev_m_phase()  
+        print('get m phase: ',  m_phase_data.name)  
         # extract others' friendly SUPPORT
         # for opp in self.nations:
         #     if opp == nation: continue
