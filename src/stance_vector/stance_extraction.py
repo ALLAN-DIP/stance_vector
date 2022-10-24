@@ -24,7 +24,7 @@ class StanceExtraction(ABC):
         self.nations = list(game.get_map_power_names())
         self.current_round = 0
         self.territories = {n:[] for n in self.nations}
-        self.stance = {n: {k: 0 for k in self.nations} for n in self.nations}
+        self.stance = {n: {k: 0.00001 for k in self.nations} for n in self.nations}
         self.game = game
         
     # def extract_terr(self, game_rec):
@@ -47,7 +47,18 @@ class StanceExtraction(ABC):
         terr = {n: terr[n]+unit2loc(self.game.get_phase_history()[-1].state['retreats'][n]) for n in self.nations}
         terr = {n: list(np.unique(terr[n]+self.game.get_phase_history()[-1].state['centers'][n])) for n in self.nations}
         return terr
-    
+
+    def get_prev_m_phase(self):
+        prev_m_phase_name= None
+        phase_hist = self.game.get_phase_history()
+        for i in range (len(phase_hist)-1, -1, -1):
+            if phase_hist[i].name[-1] =='M':
+                prev_m_phase_name = phase_hist[i].name
+        if prev_m_phase_name:
+            return self.get_phase_history(prev_m_phase_name, prev_m_phase_name, self.game.game_role)[0]
+        else:
+            return None
+
     @abstractmethod
     def get_stance(self, log, messages) -> dict:
         """
@@ -60,6 +71,8 @@ class StanceExtraction(ABC):
             Returns a bi-level dictionary stance[n][k]
         """
         raise NotImplementedError()
+
+    
         
         
 class ActionBasedStance(StanceExtraction):
@@ -165,9 +178,11 @@ class ActionBasedStance(StanceExtraction):
         #             target = game_rec["orders"][nation][unit]["to"]
         #             if target not in self.territories[nation]:
         #                 my_targets.append(target)
-        
+
+        m_phase_data = self.get_prev_m_phase()
+
         my_targets = []
-        my_orders = self.game.get_phase_history()[-1].orders[nation]
+        my_orders = m_phase_data.orders[nation]
         for order in my_orders:
             order = self.order_parser(order)
             if order[0] == 'MOVE':
@@ -195,7 +210,7 @@ class ActionBasedStance(StanceExtraction):
         
         for opp in self.nations:
             if opp == nation: continue
-            opp_orders = self.game.get_phase_history()[-1].orders[opp]
+            opp_orders = m_phase_data.orders[opp]
             if len(opp_orders) == 0: continue
             for order in opp_orders:
                 order = self.order_parser(order)
@@ -230,6 +245,7 @@ class ActionBasedStance(StanceExtraction):
         hostility = {n:0 for n in self.nations}
         hostile_supports = []
         conflit_supports = []
+        m_phase_data = self.get_prev_m_phase()
 
         # extract other's hostile MOVEs
         # for opp in self.nations:
@@ -253,7 +269,7 @@ class ActionBasedStance(StanceExtraction):
 
         for opp in self.nations:
             if opp == nation: continue
-            opp_orders = self.game.get_phase_history()[-1].orders[opp]
+            opp_orders = m_phase_data.orders[opp]
             if len(opp_orders) == 0: continue
             for order in opp_orders:
                 order = self.order_parser(order)
@@ -288,7 +304,7 @@ class ActionBasedStance(StanceExtraction):
         """
         friendship = {n:0 for n in self.nations}
         friendly_supports = []
-
+        m_phase_data = self.get_prev_m_phase()    
         # extract others' friendly SUPPORT
         # for opp in self.nations:
         #     if opp == nation: continue
@@ -307,7 +323,7 @@ class ActionBasedStance(StanceExtraction):
         
         for opp in self.nations:
             if opp == nation: continue
-            opp_orders = self.game.get_phase_history()[-1].orders[opp]
+            opp_orders = m_phase_data.orders[opp]
 
             if len(opp_orders) == 0: continue
             for order in opp_orders:
