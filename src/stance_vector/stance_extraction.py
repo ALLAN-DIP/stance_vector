@@ -184,6 +184,7 @@ class ActionBasedStance(StanceExtraction):
 
         m_phase_data = self.get_prev_m_phase()
         print('get m phase: ',  m_phase_data.name)
+        print('get m phase order: ',  m_phase_data.orders)
 
         my_targets = []
         my_orders = m_phase_data.orders[nation]
@@ -251,6 +252,7 @@ class ActionBasedStance(StanceExtraction):
         conflit_supports = []
         m_phase_data = self.get_prev_m_phase()
         print('get m phase: ',  m_phase_data.name)
+        print('get m phase order: ',  m_phase_data.orders)
 
         # extract other's hostile MOVEs
         # for opp in self.nations:
@@ -311,6 +313,7 @@ class ActionBasedStance(StanceExtraction):
         friendly_supports = []
         m_phase_data = self.get_prev_m_phase()  
         print('get m phase: ',  m_phase_data.name)  
+        print('get m phase order: ',  m_phase_data.orders)
         # extract others' friendly SUPPORT
         # for opp in self.nations:
         #     if opp == nation: continue
