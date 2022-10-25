@@ -103,9 +103,9 @@ class ActionBasedStance(StanceExtraction):
         self.beta2 = conflict_support_coef
         self.gamma1 = friendly_coef
 
-    def __game_deepcopy__(self):
+    def __game_deepcopy__(self, game):
         """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
-        game = self.game
+        # game = self.game
         if game.__class__.__name__ != "Game":
             cls = list(game.__class__.__bases__)[0]
             result = cls.__new__(cls)
@@ -356,7 +356,7 @@ class ActionBasedStance(StanceExtraction):
         return friendship, friendly_supports
     
     # def get_stance(self, game_rec, message=None):
-    def get_stance(self, message=None):
+    def get_stance(self, game, message=None):
         """
             Extract turn-level objective stance of nation n on nation k.
                 game_rec: the turn-level JSON log of a game,
@@ -364,7 +364,7 @@ class ActionBasedStance(StanceExtraction):
             Returns a bi-level dictionary of stance score stance[n][k]
         """
         #deepcopy NetworkGame to Game 
-        self.__game_deepcopy__()
+        self.__game_deepcopy__(game)
         # extract territory info
         # self.territories = self.extract_terr(game_rec)
         self.territories = self.extract_terr()
