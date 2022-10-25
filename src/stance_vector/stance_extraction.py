@@ -56,8 +56,8 @@ class StanceExtraction(ABC):
             if phase_hist[i].name[-1] =='M':
                 prev_m_phase_name = phase_hist[i].name
                 break
-        print("get_prev_m_phase >> phase_hist")
-        print([ph.name for ph in phase_hist])
+        # print("get_prev_m_phase >> phase_hist")
+        # print([ph.name for ph in phase_hist])
         if prev_m_phase_name:
             return self.game.get_phase_history(prev_m_phase_name, prev_m_phase_name, self.game.role)[0]
         else:
@@ -187,8 +187,8 @@ class ActionBasedStance(StanceExtraction):
         #                 my_targets.append(target)
 
         m_phase_data = self.get_prev_m_phase()
-        print('get m phase: ',  m_phase_data.name)
-        print('get m phase order: ',  m_phase_data.orders)
+        # print('get m phase: ',  m_phase_data.name)
+        # print('get m phase order: ',  m_phase_data.orders)
 
         my_targets = []
         my_orders = m_phase_data.orders[nation]
@@ -255,8 +255,8 @@ class ActionBasedStance(StanceExtraction):
         hostile_supports = []
         conflit_supports = []
         m_phase_data = self.get_prev_m_phase()
-        print('get m phase: ',  m_phase_data.name)
-        print('get m phase order: ',  m_phase_data.orders)
+        # print('get m phase: ',  m_phase_data.name)
+        # print('get m phase order: ',  m_phase_data.orders)
 
         # extract other's hostile MOVEs
         # for opp in self.nations:
@@ -316,8 +316,8 @@ class ActionBasedStance(StanceExtraction):
         friendship = {n:0 for n in self.nations}
         friendly_supports = []
         m_phase_data = self.get_prev_m_phase()  
-        print('get m phase: ',  m_phase_data.name)  
-        print('get m phase order: ',  m_phase_data.orders)
+        # print('get m phase: ',  m_phase_data.name)  
+        # print('get m phase order: ',  m_phase_data.orders)
         # extract others' friendly SUPPORT
         # for opp in self.nations:
         #     if opp == nation: continue
