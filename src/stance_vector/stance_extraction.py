@@ -56,8 +56,10 @@ class StanceExtraction(ABC):
             if phase_hist[i].name[-1] =='M':
                 prev_m_phase_name = phase_hist[i].name
                 break
+        # print("get_prev_m_phase >> phase_hist")
+        # print([ph.name for ph in phase_hist])
         if prev_m_phase_name:
-            return self.game.get_phase_history(prev_m_phase_name, prev_m_phase_name)[0]
+            return self.game.get_phase_history(prev_m_phase_name, prev_m_phase_name, self.game.role)[0]
         else:
             return None
 
@@ -101,9 +103,9 @@ class ActionBasedStance(StanceExtraction):
         self.beta2 = conflict_support_coef
         self.gamma1 = friendly_coef
 
-    def __game_deepcopy__(self):
+    def __game_deepcopy__(self, game):
         """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
-        game = self.game
+        # game = self.game
         if game.__class__.__name__ != "Game":
             cls = list(game.__class__.__bases__)[0]
             result = cls.__new__(cls)
@@ -185,6 +187,8 @@ class ActionBasedStance(StanceExtraction):
         #                 my_targets.append(target)
 
         m_phase_data = self.get_prev_m_phase()
+        # print('get m phase: ',  m_phase_data.name)
+        # print('get m phase order: ',  m_phase_data.orders)
 
         my_targets = []
         my_orders = m_phase_data.orders[nation]
@@ -251,6 +255,8 @@ class ActionBasedStance(StanceExtraction):
         hostile_supports = []
         conflit_supports = []
         m_phase_data = self.get_prev_m_phase()
+        # print('get m phase: ',  m_phase_data.name)
+        # print('get m phase order: ',  m_phase_data.orders)
 
         # extract other's hostile MOVEs
         # for opp in self.nations:
@@ -309,7 +315,9 @@ class ActionBasedStance(StanceExtraction):
         """
         friendship = {n:0 for n in self.nations}
         friendly_supports = []
-        m_phase_data = self.get_prev_m_phase()    
+        m_phase_data = self.get_prev_m_phase()  
+        # print('get m phase: ',  m_phase_data.name)  
+        # print('get m phase order: ',  m_phase_data.orders)
         # extract others' friendly SUPPORT
         # for opp in self.nations:
         #     if opp == nation: continue
@@ -348,7 +356,7 @@ class ActionBasedStance(StanceExtraction):
         return friendship, friendly_supports
     
     # def get_stance(self, game_rec, message=None):
-    def get_stance(self, message=None):
+    def get_stance(self, game, message=None):
         """
             Extract turn-level objective stance of nation n on nation k.
                 game_rec: the turn-level JSON log of a game,
@@ -356,7 +364,7 @@ class ActionBasedStance(StanceExtraction):
             Returns a bi-level dictionary of stance score stance[n][k]
         """
         #deepcopy NetworkGame to Game 
-        self.__game_deepcopy__()
+        self.__game_deepcopy__(game)
         # extract territory info
         # self.territories = self.extract_terr(game_rec)
         self.territories = self.extract_terr()
