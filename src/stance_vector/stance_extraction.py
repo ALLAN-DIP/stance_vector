@@ -56,6 +56,8 @@ class StanceExtraction(ABC):
             if phase_hist[i].name[-1] =='M':
                 prev_m_phase_name = phase_hist[i].name
                 break
+        print("get_prev_m_phase >> phase_hist")
+        print([ph.name for ph in phase_hist])
         if prev_m_phase_name:
             return self.game.get_phase_history(prev_m_phase_name, prev_m_phase_name, self.game.role)[0]
         else:
