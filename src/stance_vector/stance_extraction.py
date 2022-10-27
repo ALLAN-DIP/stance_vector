@@ -83,17 +83,18 @@ class ActionBasedStance(StanceExtraction):
     """
         A turn-level action-based objective stance vector baseline
         "Whoever attacks me is my enemy, whoever supports me is my friend."
-        Stance on nation k =  
+        Stance on nation k =  discount* Stance on nation k
             - α1 * count(k’s hostile moves) 
             - α2 * count(k’s conflict moves)
             - β1 * k’s count(hostile supports/convoys) 
             - β2 * count(k’s conflict supports/convoys)
             + γ1 * count(k’s friendly supports/convoys)
+            + γ2 * count(k’s unrealized hostile moves)
     """
     def __init__(self, my_identity, game,
                  invasion_coef=1.0, conflict_coef=0.5,
                  invasive_support_coef=1.0, conflict_support_coef=0.5,
-                 friendly_coef=1.0, discount_factor=0.5) -> None:
+                 friendly_coef=1.0, unrealized_coef=1.0, discount_factor=0.5) -> None:
         super().__init__(my_identity, game)
         # hyperparametes weighting different actions
         self.alpha1 = invasion_coef
@@ -102,6 +103,7 @@ class ActionBasedStance(StanceExtraction):
         self.beta1 = invasive_support_coef
         self.beta2 = conflict_support_coef
         self.gamma1 = friendly_coef
+        self.gamma2 = unrealized_coef
 
     def __game_deepcopy__(self, game):
         """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
@@ -354,6 +356,52 @@ class ActionBasedStance(StanceExtraction):
                             friendly_supports.append(unit+":"+source)
 
         return friendship, friendly_supports
+
+
+    def extract_unrealized_hostile_moves(self, nation: str):
+        """
+            Extract unrealized hostile moves toward a nation and evaluate 
+            the friendship scores it holds to other nations
+                nation: standing point
+            Returns
+                friendship: 
+                unrealized_hostile_moves: a list of potential hostile moves against the given nation
+        """
+        friendship = {n:0 for n in self.nations}
+        unrealized_hostile_moves = []
+
+        m_phase_data = self.get_prev_m_phase()
+
+        # extract other's unrealized hostile MOVEs
+        
+        for opp in self.nations:
+            if opp == nation: continue
+            opp_orders = m_phase_data.orders[opp]
+            opp_units = m_phase_data.state['units'][opp]
+            adj_pairs = set()
+            for opp_unit in opp_units:
+                for loc in self.territories[nation]:
+                    if opp_unit[0] == 'A':
+                        if self.game._abuts('A', opp_unit[2:5], '-', loc):
+                            adj_pairs.add(opp_unit[2:5]+'-'+loc)
+
+            if len(adj_pairs) > 0:
+                friendship[opp] = self.gamma2
+
+            if len(opp_orders) == 0: continue
+            for order in opp_orders:
+                order = self.order_parser(order)
+                if order[0] == 'MOVE':
+                    target = order[-1]
+                    unit = order[1]
+                    # invasion or cut support/convoy
+                    if target in self.territories[nation]:
+                        hostile_order = unit+"-"+target
+                        if hostile_order in adj_pairs:
+                            adj_pairs.remove(hostile_order)
+                            friendship[opp] = 0
+
+        return friendship, adj_pairs
     
     # def get_stance(self, game_rec, message=None):
     def get_stance(self, game, message=None):
@@ -386,14 +434,15 @@ class ActionBasedStance(StanceExtraction):
         for n in self.nations:
             friendship_to[n], friendly_sup_to[n] = self.extract_friendly_supports(n)
 
-        if self.stance:
-            self.stance = {n: {k: self.discount * self.stance[n][k] - hostililty_to[n][k] -hostililty_s_to[n][k] +friendship_to[n][k]
-                             for k in self.nations}
-                      for n in self.nations}
-        else:
-            self.stance = {n: {k: -hostililty_to[n][k] -hostililty_s_to[n][k] +friendship_to[n][k]
-                             for k in self.nations}
-                      for n in self.nations}
+        # extract unrealized hostile moves
+        friendship_ur_to, unrealized_move_to = {}, {}
+        for n in self.nations:
+            friendship_ur_to[n], unrealized_move_to[n] = self.extract_unrealized_hostile_moves(n)
+
+       
+        self.stance = {n: {k: self.discount * self.stance[n][k] - hostililty_to[n][k] -hostililty_s_to[n][k] +friendship_to[n][k] +friendship_ur_to[n][k]
+                         for k in self.nations}
+                  for n in self.nations}
     
         return self.stance
 
