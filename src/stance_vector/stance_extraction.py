@@ -94,7 +94,8 @@ class ActionBasedStance(StanceExtraction):
     def __init__(self, my_identity, game,
                  invasion_coef=1.0, conflict_coef=0.5,
                  invasive_support_coef=1.0, conflict_support_coef=0.5,
-                 friendly_coef=1.0, unrealized_coef=1.0, discount_factor=0.5) -> None:
+                 friendly_coef=1.0, unrealized_coef=1.0, discount_factor=0.5,
+                 end_game_flip=True, year_threshold=1915) -> None:
         super().__init__(my_identity, game)
         # hyperparametes weighting different actions
         self.alpha1 = invasion_coef
@@ -104,6 +105,8 @@ class ActionBasedStance(StanceExtraction):
         self.beta2 = conflict_support_coef
         self.gamma1 = friendly_coef
         self.gamma2 = unrealized_coef
+        self.end_game_flip = end_game_flip
+        self.year_threshold = year_threshold
 
     def __game_deepcopy__(self, game):
         """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
@@ -437,13 +440,21 @@ class ActionBasedStance(StanceExtraction):
         # extract unrealized hostile moves
         friendship_ur_to, unrealized_move_to = {}, {}
         for n in self.nations:
-            friendship_ur_to[n], unrealized_move_to[n] = self.extract_unrealized_hostile_moves(n)
+            friendship_ur_to[n], unrealized_move_to[n] = self.extract_unrealized_hostile_moves(n)    
 
-       
         self.stance = {n: {k: self.discount * self.stance[n][k] - hostililty_to[n][k] -hostililty_s_to[n][k] +friendship_to[n][k] +friendship_ur_to[n][k]
                          for k in self.nations}
                   for n in self.nations}
-    
+
+        # simple heuristic to make all other coutries enermy
+        if self.end_game_flip:
+            m_phase_data = self.get_prev_m_phase()  
+            if int(m_phase_data.name[1:5]) > self.year_threshold:
+                for n in self.nations:
+                    for k in self.nations:
+                        if self.stance[n][k] > 0:
+                            self.stance[n][k] = -1
+            
         return self.stance
 
 import numpy as np
