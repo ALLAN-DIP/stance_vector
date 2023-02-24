@@ -84,18 +84,18 @@ class ActionBasedStance(StanceExtraction):
         A turn-level action-based objective stance vector baseline
         "Whoever attacks me is my enemy, whoever supports me is my friend."
         Stance on nation k =  discount* Stance on nation k
-            - α1 * count(k’s hostile moves) 
-            - α2 * count(k’s conflict moves)
-            - β1 * k’s count(hostile supports/convoys) 
-            - β2 * count(k’s conflict supports/convoys)
-            + γ1 * count(k’s friendly supports/convoys)
-            + γ2 * count(k’s unrealized hostile moves)
+            - alpha1 * count(k's hostile moves) 
+            - alpha2 * count(k's conflict moves)
+            - beta1 * k's count(hostile supports/convoys) 
+            - beta2 * count(k's conflict supports/convoys)
+            + gamma1 * count(k's friendly supports/convoys)
+            + gamma2 * count(k's unrealized hostile moves)
     """
     def __init__(self, my_identity, game,
                  invasion_coef=1.0, conflict_coef=0.5,
                  invasive_support_coef=1.0, conflict_support_coef=0.5,
                  friendly_coef=1.0, unrealized_coef=1.0, discount_factor=0.5,
-                 end_game_flip=True, year_threshold=1915) -> None:
+                 end_game_flip=False, year_threshold=1915) -> None:
         super().__init__(my_identity, game)
         # hyperparametes weighting different actions
         self.alpha1 = invasion_coef
@@ -107,6 +107,7 @@ class ActionBasedStance(StanceExtraction):
         self.gamma2 = unrealized_coef
         self.end_game_flip = end_game_flip
         self.year_threshold = year_threshold
+
 
     def __game_deepcopy__(self, game):
         """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
@@ -242,6 +243,7 @@ class ActionBasedStance(StanceExtraction):
 
         return hostility, hostile_moves, conflit_moves
                     
+
     # def extract_hostile_supports(self, nation, hostile_mov, conflit_mov, game_rec):
     def extract_hostile_supports(self, nation, hostile_mov, conflit_mov):
         """
@@ -407,7 +409,7 @@ class ActionBasedStance(StanceExtraction):
         return friendship, adj_pairs
     
     # def get_stance(self, game_rec, message=None):
-    def get_stance(self, game, message=None):
+    def get_stance(self, game, message=None, verbose=False):
         """
             Extract turn-level objective stance of nation n on nation k.
                 game_rec: the turn-level JSON log of a game,
@@ -421,15 +423,15 @@ class ActionBasedStance(StanceExtraction):
         self.territories = self.extract_terr()
 
         # extract hostile moves
-        hostililty_to, hostile_mov_to, conflit_mov_to = {}, {}, {}
+        hostility_to, hostile_mov_to, conflit_mov_to = {}, {}, {}
         for n in self.nations:
-            hostililty_to[n], hostile_mov_to[n], conflit_mov_to[n] = self.extract_hostile_moves(
+            hostility_to[n], hostile_mov_to[n], conflit_mov_to[n] = self.extract_hostile_moves(
                 n)
 
         # extract hostile supports
-        hostililty_s_to, hostile_sup_to, conflit_sup_to = {}, {}, {}
+        hostility_s_to, hostile_sup_to, conflit_sup_to = {}, {}, {}
         for n in self.nations:
-            hostililty_s_to[n], hostile_sup_to[n], conflit_sup_to[n] = self.extract_hostile_supports(
+            hostility_s_to[n], hostile_sup_to[n], conflit_sup_to[n] = self.extract_hostile_supports(
                 n, hostile_mov_to[n], conflit_mov_to[n])
 
         # extract friendly supports
@@ -442,7 +444,9 @@ class ActionBasedStance(StanceExtraction):
         for n in self.nations:
             friendship_ur_to[n], unrealized_move_to[n] = self.extract_unrealized_hostile_moves(n)    
 
-        self.stance = {n: {k: self.discount * self.stance[n][k] - hostililty_to[n][k] -hostililty_s_to[n][k] +friendship_to[n][k] +friendship_ur_to[n][k]
+        self.stance_prev = self.stance
+
+        self.stance = {n: {k: self.discount * self.stance[n][k] - hostility_to[n][k] -hostility_s_to[n][k] +friendship_to[n][k] +friendship_ur_to[n][k]
                          for k in self.nations}
                   for n in self.nations}
 
@@ -454,8 +458,31 @@ class ActionBasedStance(StanceExtraction):
                     for k in self.nations:
                         if self.stance[n][k] > 0:
                             self.stance[n][k] = -1
-            
-        return self.stance
+        
+        if not verbose: 
+            return self.stance
+        else:
+            log = {n: {k: "" for k in self.nations} for n in self.nations}
+            for n in self.nations:
+                for k in self.nations:
+                    if k == n: continue
+                    total = -hostility_to[n][k] -hostility_s_to[n][k] +friendship_to[n][k] +friendship_ur_to[n][k]
+                    log[n][k] += "\nMy stance to {} decays from {} to {} by a factor {} as proceeding to a new phase".format(k, self.stance_prev[n][k], self.discount * self.stance_prev[n][k], self.discount)
+                    if hostility_to[n][k] != 0:
+                        log[n][k] += "\nMy stance to {} decreases by {} becasue of their hostile/conflict moves towards me.".format(k, hostility_to[n][k])
+                    if hostility_s_to[n][k] != 0:
+                        log[n][k] += "\nMy stance to {} decreases by {} becasue of their hostile/conflict support.".format(k, hostility_s_to[n][k])
+                    if friendship_to[n][k] != 0:
+                        log[n][k] += "\nMy stance to {} increases by {} becasue of receiving their support.".format(k, friendship_to[n][k])
+                    if friendship_ur_to[n][k] > 0:
+                        log[n][k] += "\nMy stance to {} increases by {} becasue they could attack but didn't.".format(k, friendship_ur_to[n][k])
+                    if friendship_ur_to[n][k] < 0:
+                        log[n][k] += "\nMy stance to {} decreases by {} becasue of they could be a threat.".format(k, friendship_ur_to[n][k])
+                    if self.end_game_flip and (int(m_phase_data.name[1:5]) > self.year_threshold):
+                        log[n][k] += "\nMy stance to {} becomes {}, because its after year {}".format(k, friendship_ur_to[n][k], m_phase_data.name[1:5])
+                    log[n][k] += "\n My final stance score to {} is {}".format(k, self.stance[n][k])
+
+            return self.stance, log
 
 import numpy as np
 
@@ -464,7 +491,7 @@ class ScoreBasedStance(StanceExtraction):
         A turn-level score-based subjective stance vector baseline
         "Whoever stronger than me must be evil, whoever weaker than me can be my ally."
         Stance on nation k = 
-            sign(my score - k’s score)
+            sign(my score - k's score)
     """
     def __init__(self, my_identity: str, game: Game) -> None:
         super().__init__(my_identity, game)
