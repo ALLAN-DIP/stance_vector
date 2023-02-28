@@ -4,6 +4,7 @@ __email__ = ""
 from diplomacy import Game
 from copy import deepcopy
 from diplomacy.utils import strings
+import numpy as np
 
 """
     Stance vector modules
@@ -95,7 +96,8 @@ class ActionBasedStance(StanceExtraction):
                  invasion_coef=1.0, conflict_coef=0.5,
                  invasive_support_coef=1.0, conflict_support_coef=0.5,
                  friendly_coef=1.0, unrealized_coef=1.0, discount_factor=0.5,
-                 end_game_flip=True, year_threshold=1918) -> None:
+                 end_game_flip=True, year_threshold=1918,
+                 random_betrayal=True) -> None:
         super().__init__(my_identity, game)
         # hyperparametes weighting different actions
         self.alpha1 = invasion_coef
@@ -107,6 +109,7 @@ class ActionBasedStance(StanceExtraction):
         self.gamma2 = unrealized_coef
         self.end_game_flip = end_game_flip
         self.year_threshold = year_threshold
+        self.random_betrayal = random_betrayal
 
 
     def __game_deepcopy__(self, game):
@@ -458,6 +461,20 @@ class ActionBasedStance(StanceExtraction):
                     for k in self.nations:
                         if self.stance[n][k] > 0:
                             self.stance[n][k] = -1
+
+        # randomly chose one enermy if stance are all postivie
+        flipped = {n: {k: False for k in self.nations} for n in self.nations}
+        if self.random_betrayal:
+            for n in self.nations:
+                all_possitive = True
+                for k in self.nations:
+                    if self.stance[n][k] < 0:
+                        all_possitive = False
+                if all_possitive:
+                    flip_k = np.random.choice([k for k in self.nations if k != n])
+                    self.stance[n][flip_k] = -1
+                    flipped[n][flip_k] = True
+
         
         if not verbose: 
             return self.stance
@@ -478,6 +495,8 @@ class ActionBasedStance(StanceExtraction):
                         log[n][k] += "\nMy stance to {} increases by {} because they could attack but didn't.".format(k, friendship_ur_to[n][k])
                     if friendship_ur_to[n][k] < 0:
                         log[n][k] += "\nMy stance to {} decreases by {} because of they could be a threat.".format(k, friendship_ur_to[n][k])
+                    if self.random_betrayal and flipped[n][k]:
+                        log[n][k] += "\nMy stance to {} becomes {} because I plan to randomly betray {} to break the peace.".format(k, self.stance[n][k], k)
                     if self.end_game_flip and (int(m_phase_data.name[1:5]) > self.year_threshold):
                         log[n][k] += "\nMy stance to {} becomes {}, because I plan to betray everyone after year {}.".format(k, friendship_ur_to[n][k], m_phase_data.name[1:5])
                     log[n][k] += "\n My final stance score to {} is {}.".format(k, self.stance[n][k])
