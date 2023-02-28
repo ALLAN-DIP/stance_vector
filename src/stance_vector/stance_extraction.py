@@ -95,7 +95,7 @@ class ActionBasedStance(StanceExtraction):
                  invasion_coef=1.0, conflict_coef=0.5,
                  invasive_support_coef=1.0, conflict_support_coef=0.5,
                  friendly_coef=1.0, unrealized_coef=1.0, discount_factor=0.5,
-                 end_game_flip=False, year_threshold=1915) -> None:
+                 end_game_flip=True, year_threshold=1918) -> None:
         super().__init__(my_identity, game)
         # hyperparametes weighting different actions
         self.alpha1 = invasion_coef
@@ -467,22 +467,31 @@ class ActionBasedStance(StanceExtraction):
                 for k in self.nations:
                     if k == n: continue
                     total = -hostility_to[n][k] -hostility_s_to[n][k] +friendship_to[n][k] +friendship_ur_to[n][k]
-                    log[n][k] += "\nMy stance to {} decays from {} to {} by a factor {} as proceeding to a new phase".format(k, self.stance_prev[n][k], self.discount * self.stance_prev[n][k], self.discount)
+                    log[n][k] += "My stance to {} decays from {} to {} by a factor {}.".format(k, self.stance_prev[n][k], self.discount * self.stance_prev[n][k], self.discount)
                     if hostility_to[n][k] != 0:
-                        log[n][k] += "\nMy stance to {} decreases by {} becasue of their hostile/conflict moves towards me.".format(k, hostility_to[n][k])
+                        log[n][k] += "\nMy stance to {} decreases by {} because of their hostile/conflict moves towards me.".format(k, hostility_to[n][k])
                     if hostility_s_to[n][k] != 0:
-                        log[n][k] += "\nMy stance to {} decreases by {} becasue of their hostile/conflict support.".format(k, hostility_s_to[n][k])
+                        log[n][k] += "\nMy stance to {} decreases by {} because of their hostile/conflict support.".format(k, hostility_s_to[n][k])
                     if friendship_to[n][k] != 0:
-                        log[n][k] += "\nMy stance to {} increases by {} becasue of receiving their support.".format(k, friendship_to[n][k])
+                        log[n][k] += "\nMy stance to {} increases by {} because of receiving their support.".format(k, friendship_to[n][k])
                     if friendship_ur_to[n][k] > 0:
-                        log[n][k] += "\nMy stance to {} increases by {} becasue they could attack but didn't.".format(k, friendship_ur_to[n][k])
+                        log[n][k] += "\nMy stance to {} increases by {} because they could attack but didn't.".format(k, friendship_ur_to[n][k])
                     if friendship_ur_to[n][k] < 0:
-                        log[n][k] += "\nMy stance to {} decreases by {} becasue of they could be a threat.".format(k, friendship_ur_to[n][k])
+                        log[n][k] += "\nMy stance to {} decreases by {} because of they could be a threat.".format(k, friendship_ur_to[n][k])
                     if self.end_game_flip and (int(m_phase_data.name[1:5]) > self.year_threshold):
-                        log[n][k] += "\nMy stance to {} becomes {}, because its after year {}".format(k, friendship_ur_to[n][k], m_phase_data.name[1:5])
-                    log[n][k] += "\n My final stance score to {} is {}".format(k, self.stance[n][k])
+                        log[n][k] += "\nMy stance to {} becomes {}, because I plan to betray everyone after year {}.".format(k, friendship_ur_to[n][k], m_phase_data.name[1:5])
+                    log[n][k] += "\n My final stance score to {} is {}.".format(k, self.stance[n][k])
 
             return self.stance, log
+
+
+    def update_stance(self, my_id, opp_id, value):
+        """
+            Force update the stance value
+            could be used when receiving ally proposal
+        """
+        self.stance[my_id][opp_id] = value
+
 
 import numpy as np
 
