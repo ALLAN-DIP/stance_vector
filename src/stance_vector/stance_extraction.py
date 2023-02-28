@@ -496,7 +496,7 @@ class ActionBasedStance(StanceExtraction):
                     if friendship_ur_to[n][k] < 0:
                         log[n][k] += "\nMy stance to {} decreases by {} because of they could be a threat.".format(k, friendship_ur_to[n][k])
                     if self.random_betrayal and flipped[n][k]:
-                        log[n][k] += "\nMy stance to {} becomes {} because I plan to randomly betray {} to break the peace.".format(k, self.stance[n][k], k)
+                        log[n][k] += "\nMy stance to {} becomes {} because I plan to betray {} to break the peace.".format(k, self.stance[n][k], k)
                     if self.end_game_flip and (int(m_phase_data.name[1:5]) > self.year_threshold):
                         log[n][k] += "\nMy stance to {} becomes {}, because I plan to betray everyone after year {}.".format(k, friendship_ur_to[n][k], m_phase_data.name[1:5])
                     log[n][k] += "\n My final stance score to {} is {}.".format(k, self.stance[n][k])
