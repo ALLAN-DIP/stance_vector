@@ -2,7 +2,11 @@ __authors__ = "Runzhe Yang"
 __email__ = ""
 
 from diplomacy import Game
-from stance_extraction import ActionBasedStance
+import numpy as np
+
+from stance_vector import ActionBasedStance
+
+np.random.seed(0)
 
 game = Game()
 my_id = 'FRANCE'
