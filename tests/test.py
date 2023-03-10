@@ -44,7 +44,6 @@ print(stances['FRANCE'])
 print(stance_log['FRANCE'])
 
 
-# game.process()
 game.set_orders('FRANCE', ['A BRE - PAR', 'A GAS - BUR', 'F PIC - BEL'])
 game.set_orders('ENGLAND', ['A BEL - HOL', 'F ENG S F PIC - BEL', 'F HEL S A BEL - HOL'])
 game.set_orders('GERMANY', ['A BUR S A PAR - PIC', 'A PAR - PIC', 'F HOL H'])

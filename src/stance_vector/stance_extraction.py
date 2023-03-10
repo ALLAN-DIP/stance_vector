@@ -28,16 +28,11 @@ class StanceExtraction(ABC):
         self.stance = {n: {k: 0.1 for k in self.nations} for n in self.nations}
         self.game = game
 
-    # def extract_terr(self, game_rec):
     def extract_terr(self):
         """
             Extract current terrirories for each nation from
                game_rec: the turn-level JSON log of a game
         """
-        # terr = {n:[] for n in self.nations}
-        # for city in game_rec["territories"].keys():
-        #     terr[game_rec["territories"][city]].append(city)
-        # terr = {n: self.game.get_orderable_locations(n) for n in self.nations}
         def unit2loc(units):
             locs = []
             for u in units:
@@ -57,8 +52,6 @@ class StanceExtraction(ABC):
             if phase_hist[i].name[-1] =='M':
                 prev_m_phase_name = phase_hist[i].name
                 break
-        # print("get_prev_m_phase >> phase_hist")
-        # print([ph.name for ph in phase_hist])
         if prev_m_phase_name:
             return self.game.get_phase_history(prev_m_phase_name, prev_m_phase_name, self.game.role)[0]
         else:
@@ -114,7 +107,6 @@ class ActionBasedStance(StanceExtraction):
 
     def __game_deepcopy__(self, game):
         """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
-        # game = self.game
         if game.__class__.__name__ != "Game":
             cls = list(game.__class__.__bases__)[0]
             result = cls.__new__(cls)
@@ -169,7 +161,6 @@ class ActionBasedStance(StanceExtraction):
                 return ('CONVOY', order_comp[1], order_comp[4], order_comp[6])
         return ('UKNOWN', 'UKNOWN', 'UKNOWN')
 
-    # def extract_hostile_moves(self, nation, game_rec):
     def extract_hostile_moves(self, nation: str):
         """
             Extract hostile moves toward a nation and evaluate
@@ -187,17 +178,7 @@ class ActionBasedStance(StanceExtraction):
 
         # extract my target cities
 
-        # my_targets = []
-        # if nation in game_rec["orders"].keys():
-        #     for unit in game_rec["orders"][nation].keys():
-        #         if game_rec["orders"][nation][unit]["type"] in ["MOVE"]:
-        #             target = game_rec["orders"][nation][unit]["to"]
-        #             if target not in self.territories[nation]:
-        #                 my_targets.append(target)
-
         m_phase_data = self.get_prev_m_phase()
-        # print('get m phase: ',  m_phase_data.name)
-        # print('get m phase order: ',  m_phase_data.orders)
 
         my_targets = []
         my_orders = m_phase_data.orders[nation]
@@ -210,21 +191,6 @@ class ActionBasedStance(StanceExtraction):
 
 
         # extract other's hostile MOVEs
-
-        # for opp in self.nations:
-        #     if opp == nation: continue
-        #     if opp not in game_rec["orders"].keys(): continue
-        #     for unit in game_rec["orders"][opp].keys():
-        #         if game_rec["orders"][opp][unit]["type"] in ["MOVE"]:
-        #             target = game_rec["orders"][opp][unit]["to"]
-        #             # invasion or cut support/convoy
-        #             if target in self.territories[nation]:
-        #                 hostility[opp] += self.alpha1
-        #                 hostile_moves.append(unit+"-"+target)
-        #             # seize the same city
-        #             elif target in my_targets:
-        #                 hostility[opp] += self.alpha2
-        #                 conflit_moves.append(unit+"-"+target)
 
         for opp in self.nations:
             if opp == nation: continue
@@ -247,7 +213,6 @@ class ActionBasedStance(StanceExtraction):
         return hostility, hostile_moves, conflit_moves
 
 
-    # def extract_hostile_supports(self, nation, hostile_mov, conflit_mov, game_rec):
     def extract_hostile_supports(self, nation, hostile_mov, conflit_mov):
         """
             Extract hostile support toward a nation and evaluate
@@ -265,28 +230,8 @@ class ActionBasedStance(StanceExtraction):
         hostile_supports = []
         conflit_supports = []
         m_phase_data = self.get_prev_m_phase()
-        # print('get m phase: ',  m_phase_data.name)
-        # print('get m phase order: ',  m_phase_data.orders)
 
         # extract other's hostile MOVEs
-        # for opp in self.nations:
-        #     if opp == nation: continue
-        #     if opp not in game_rec["orders"].keys(): continue
-        #     for unit in game_rec["orders"][opp].keys():
-        #         if game_rec["orders"][opp][unit]["type"] in ["SUPPORT", "CONVOY"]:
-        #             source = game_rec["orders"][opp][unit]["from"]
-        #             # if not supporting a HOLD
-        #             if "to" in game_rec["orders"][opp][unit].keys():
-        #                 target = game_rec["orders"][opp][unit]["to"]
-        #                 support = source+"-"+target
-        #                 # support invasion or support a cut support/convoy
-        #                 if support in hostile_mov:
-        #                     hostility[opp] += self.beta1
-        #                     hostile_supports.append(unit+":"+source+"-"+target)
-        #                 # support an attack to seize the same city
-        #                 elif target in conflit_mov:
-        #                     hostility[opp] += self.beta2
-        #                     conflit_supports.append(unit+":"+source+"-"+target)
 
         for opp in self.nations:
             if opp == nation: continue
@@ -312,7 +257,6 @@ class ActionBasedStance(StanceExtraction):
 
         return hostility, hostile_supports, conflit_supports
 
-    # def extract_friendly_supports(self, nation, game_rec):
     def extract_friendly_supports(self, nation):
         """
             Extract friendly support toward a nation and evaluate
@@ -326,23 +270,7 @@ class ActionBasedStance(StanceExtraction):
         friendship = {n:0 for n in self.nations}
         friendly_supports = []
         m_phase_data = self.get_prev_m_phase()
-        # print('get m phase: ',  m_phase_data.name)
-        # print('get m phase order: ',  m_phase_data.orders)
         # extract others' friendly SUPPORT
-        # for opp in self.nations:
-        #     if opp == nation: continue
-        #     if opp not in game_rec["orders"].keys(): continue
-        #     for unit in game_rec["orders"][opp].keys():
-        #         if game_rec["orders"][opp][unit]["type"] in ["SUPPORT", "CONVOY"]:
-        #             source = game_rec["orders"][opp][unit]["from"]
-        #             # any kind of support to me
-        #             if source in self.territories[nation]:
-        #                 friendship[opp] += self.gamma1
-        #                 if "to" in game_rec["orders"][opp][unit].keys():
-        #                     target = game_rec["orders"][opp][unit]["to"]
-        #                     friendly_supports.append(unit+":"+source+"-"+target)
-        #                 else:
-        #                     friendly_supports.append(unit+":"+source)
 
         for opp in self.nations:
             if opp == nation: continue
@@ -411,7 +339,6 @@ class ActionBasedStance(StanceExtraction):
 
         return friendship, adj_pairs
 
-    # def get_stance(self, game_rec, message=None):
     def get_stance(self, game, message=None, verbose=False):
         """
             Extract turn-level objective stance of nation n on nation k.
@@ -422,7 +349,6 @@ class ActionBasedStance(StanceExtraction):
         #deepcopy NetworkGame to Game
         self.__game_deepcopy__(game)
         # extract territory info
-        # self.territories = self.extract_terr(game_rec)
         self.territories = self.extract_terr()
 
         # extract hostile moves
@@ -533,10 +459,6 @@ class ScoreBasedStance(StanceExtraction):
             Returns a dict of scores for all nations
         """
         scores = {n:0 for n in self.nations}
-        # sc_info = game_rec['sc'].split()
-        # for i, n in enumerate(sc_info):
-        #     if n in self.nations:
-        #         scores[n] = int(sc_info[i+1])
         for n in self.nations:
             scores[n] = len(self.game.powers[n].centers) if self.game.powers[n].centers else 0
         return scores
