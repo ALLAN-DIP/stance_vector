@@ -52,4 +52,3 @@ game.process()
 stances, stance_log = action_stance.get_stance(game, verbose=True)
 print(stances['FRANCE'])
 print(stance_log['FRANCE'])
-

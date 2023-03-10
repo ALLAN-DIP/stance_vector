@@ -8,10 +8,10 @@ import numpy as np
 
 """
     Stance vector modules
-    
+
     Tested on the turn-level game logs in
     https://github.com/DenisPeskov/2020_acl_diplomacy/blob/master/utils/ExtraGameData.zip
-    
+
 """
 
 from abc import ABC, abstractmethod
@@ -27,11 +27,11 @@ class StanceExtraction(ABC):
         self.territories = {n:[] for n in self.nations}
         self.stance = {n: {k: 0.1 for k in self.nations} for n in self.nations}
         self.game = game
-        
+
     # def extract_terr(self, game_rec):
     def extract_terr(self):
         """
-            Extract current terrirories for each nation from 
+            Extract current terrirories for each nation from
                game_rec: the turn-level JSON log of a game
         """
         # terr = {n:[] for n in self.nations}
@@ -70,24 +70,24 @@ class StanceExtraction(ABC):
             Abstract method to extract stance of nation n on nation k,
             for all pairs of nations n, k at the current round, given
             the game history and messages
-                log: the turn-level JSON log 
+                log: the turn-level JSON log
                      or a list of turn-level logs of the game,
                 messages: a dict of dialog lists with other nations in a given round
             Returns a bi-level dictionary stance[n][k]
         """
         raise NotImplementedError()
 
-    
-        
-        
+
+
+
 class ActionBasedStance(StanceExtraction):
     """
         A turn-level action-based objective stance vector baseline
         "Whoever attacks me is my enemy, whoever supports me is my friend."
         Stance on nation k =  discount* Stance on nation k
-            - alpha1 * count(k's hostile moves) 
+            - alpha1 * count(k's hostile moves)
             - alpha2 * count(k's conflict moves)
-            - beta1 * k's count(hostile supports/convoys) 
+            - beta1 * k's count(hostile supports/convoys)
             - beta2 * count(k's conflict supports/convoys)
             + gamma1 * count(k's friendly supports/convoys)
             + gamma2 * count(k's unrealized hostile moves)
@@ -143,8 +143,8 @@ class ActionBasedStance(StanceExtraction):
         self.game = result
 
     def order_parser(self, order: str):
-        """ 
-            Dipnet order syntax based on 
+        """
+            Dipnet order syntax based on
             https://docs.google.com/document/d/16RODa6KDX7vNNooBdciI4NqSVN31lToto3MLTNcEHk0/edit
 
             The parser will return a tuple:
@@ -172,7 +172,7 @@ class ActionBasedStance(StanceExtraction):
     # def extract_hostile_moves(self, nation, game_rec):
     def extract_hostile_moves(self, nation: str):
         """
-            Extract hostile moves toward a nation and evaluate 
+            Extract hostile moves toward a nation and evaluate
             the hostility scores it holds to other nations
                 nation: standing point
                 game_rec: the turn-level JSON log of a game
@@ -184,9 +184,9 @@ class ActionBasedStance(StanceExtraction):
         hostility = {n:0 for n in self.nations}
         hostile_moves = []
         conflit_moves = []
-        
+
         # extract my target cities
-        
+
         # my_targets = []
         # if nation in game_rec["orders"].keys():
         #     for unit in game_rec["orders"][nation].keys():
@@ -210,7 +210,7 @@ class ActionBasedStance(StanceExtraction):
 
 
         # extract other's hostile MOVEs
-        
+
         # for opp in self.nations:
         #     if opp == nation: continue
         #     if opp not in game_rec["orders"].keys(): continue
@@ -225,7 +225,7 @@ class ActionBasedStance(StanceExtraction):
         #             elif target in my_targets:
         #                 hostility[opp] += self.alpha2
         #                 conflit_moves.append(unit+"-"+target)
-        
+
         for opp in self.nations:
             if opp == nation: continue
             opp_orders = m_phase_data.orders[opp]
@@ -245,12 +245,12 @@ class ActionBasedStance(StanceExtraction):
                         conflit_moves.append(unit+"-"+target)
 
         return hostility, hostile_moves, conflit_moves
-                    
+
 
     # def extract_hostile_supports(self, nation, hostile_mov, conflit_mov, game_rec):
     def extract_hostile_supports(self, nation, hostile_mov, conflit_mov):
         """
-            Extract hostile support toward a nation and evaluate 
+            Extract hostile support toward a nation and evaluate
             the hostility scores it holds to other nations
                 nation: standing point
                 hostile_mov: a list of hostile moves against the given nation
@@ -311,11 +311,11 @@ class ActionBasedStance(StanceExtraction):
                             conflit_supports.append(unit+":"+source+"-"+target)
 
         return hostility, hostile_supports, conflit_supports
-    
+
     # def extract_friendly_supports(self, nation, game_rec):
     def extract_friendly_supports(self, nation):
         """
-            Extract friendly support toward a nation and evaluate 
+            Extract friendly support toward a nation and evaluate
             the friend scores it holds to other nations
                 nation: standing point
                 game_rec: the turn-level JSON log of a game
@@ -325,8 +325,8 @@ class ActionBasedStance(StanceExtraction):
         """
         friendship = {n:0 for n in self.nations}
         friendly_supports = []
-        m_phase_data = self.get_prev_m_phase()  
-        # print('get m phase: ',  m_phase_data.name)  
+        m_phase_data = self.get_prev_m_phase()
+        # print('get m phase: ',  m_phase_data.name)
         # print('get m phase order: ',  m_phase_data.orders)
         # extract others' friendly SUPPORT
         # for opp in self.nations:
@@ -339,11 +339,11 @@ class ActionBasedStance(StanceExtraction):
         #             if source in self.territories[nation]:
         #                 friendship[opp] += self.gamma1
         #                 if "to" in game_rec["orders"][opp][unit].keys():
-        #                     target = game_rec["orders"][opp][unit]["to"] 
+        #                     target = game_rec["orders"][opp][unit]["to"]
         #                     friendly_supports.append(unit+":"+source+"-"+target)
-        #                 else: 
+        #                 else:
         #                     friendly_supports.append(unit+":"+source)
-        
+
         for opp in self.nations:
             if opp == nation: continue
             opp_orders = m_phase_data.orders[opp]
@@ -358,9 +358,9 @@ class ActionBasedStance(StanceExtraction):
                     if source in self.territories[nation]:
                         friendship[opp] += self.gamma1
                         if len(order) > 3:
-                            target = order[3] 
+                            target = order[3]
                             friendly_supports.append(unit+":"+source+"-"+target)
-                        else: 
+                        else:
                             friendly_supports.append(unit+":"+source)
 
         return friendship, friendly_supports
@@ -368,11 +368,11 @@ class ActionBasedStance(StanceExtraction):
 
     def extract_unrealized_hostile_moves(self, nation: str):
         """
-            Extract unrealized hostile moves toward a nation and evaluate 
+            Extract unrealized hostile moves toward a nation and evaluate
             the friendship scores it holds to other nations
                 nation: standing point
             Returns
-                friendship: 
+                friendship:
                 unrealized_hostile_moves: a list of potential hostile moves against the given nation
         """
         friendship = {n:0 for n in self.nations}
@@ -381,7 +381,7 @@ class ActionBasedStance(StanceExtraction):
         m_phase_data = self.get_prev_m_phase()
 
         # extract other's unrealized hostile MOVEs
-        
+
         for opp in self.nations:
             if opp == nation: continue
             opp_orders = m_phase_data.orders[opp]
@@ -410,7 +410,7 @@ class ActionBasedStance(StanceExtraction):
                             friendship[opp] = 0
 
         return friendship, adj_pairs
-    
+
     # def get_stance(self, game_rec, message=None):
     def get_stance(self, game, message=None, verbose=False):
         """
@@ -419,7 +419,7 @@ class ActionBasedStance(StanceExtraction):
                 messages is not used
             Returns a bi-level dictionary of stance score stance[n][k]
         """
-        #deepcopy NetworkGame to Game 
+        #deepcopy NetworkGame to Game
         self.__game_deepcopy__(game)
         # extract territory info
         # self.territories = self.extract_terr(game_rec)
@@ -445,7 +445,7 @@ class ActionBasedStance(StanceExtraction):
         # extract unrealized hostile moves
         friendship_ur_to, unrealized_move_to = {}, {}
         for n in self.nations:
-            friendship_ur_to[n], unrealized_move_to[n] = self.extract_unrealized_hostile_moves(n)    
+            friendship_ur_to[n], unrealized_move_to[n] = self.extract_unrealized_hostile_moves(n)
 
         self.stance_prev = self.stance
 
@@ -455,7 +455,7 @@ class ActionBasedStance(StanceExtraction):
 
         # simple heuristic to make all other coutries enermy
         if self.end_game_flip:
-            m_phase_data = self.get_prev_m_phase()  
+            m_phase_data = self.get_prev_m_phase()
             if int(m_phase_data.name[1:5]) > self.year_threshold:
                 for n in self.nations:
                     for k in self.nations:
@@ -475,8 +475,8 @@ class ActionBasedStance(StanceExtraction):
                     self.stance[n][flip_k] = -1
                     flipped[n][flip_k] = True
 
-        
-        if not verbose: 
+
+        if not verbose:
             return self.stance
         else:
             log = {n: {k: "" for k in self.nations} for n in self.nations}
@@ -518,14 +518,14 @@ class ScoreBasedStance(StanceExtraction):
     """
         A turn-level score-based subjective stance vector baseline
         "Whoever stronger than me must be evil, whoever weaker than me can be my ally."
-        Stance on nation k = 
+        Stance on nation k =
             sign(my score - k's score)
     """
     def __init__(self, my_identity: str, game: Game) -> None:
         super().__init__(my_identity, game)
         self.scores = None
         self.stance = None
-        
+
     def extract_scores(self):
         """
             Extract scores at the end of each round.
@@ -540,7 +540,7 @@ class ScoreBasedStance(StanceExtraction):
         for n in self.nations:
             scores[n] = len(self.game.powers[n].centers) if self.game.powers[n].centers else 0
         return scores
-    
+
     def get_stance(self):
         """
             Extract turn-level subjective stance of nation n on nation k.
@@ -554,6 +554,5 @@ class ScoreBasedStance(StanceExtraction):
         self.stance = {n: {k: np.sign(self.scores[n]-self.scores[k]) if self.scores[n] > 0 else 0
                          for k in self.nations}
                   for n in self.nations}
-        
+
         return self.stance
-    
