@@ -1,0 +1,11 @@
+# Python files
+*.egg*
+/.mypy_cache/
+__pycache__/
+
+# IDE files
+/.idea/
+/.vscode/
+
+# Project-specific files
+/data/
