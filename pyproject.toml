@@ -8,7 +8,7 @@ target-version = ["py37"]
 
 [tool.codespell]
 ignore-regex = "\\[nt]" # Do not count escaped newlines or tabs as part of a word
-ignore-words-list = "hel"  # "HEL" is from DAIDE
+ignore-words-list = "hel,vie"  # "HEL" and "VIE" are from DAIDE
 quiet-level = 0 # Display all warnings
 check-filenames = ""
 check-hidden = ""
