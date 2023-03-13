@@ -159,7 +159,7 @@ class ActionBasedStance(StanceExtraction):
                 return ('SUPPORT', order_comp[1], order_comp[4], order_comp[6])
             elif order_comp[2] in ['C']:
                 return ('CONVOY', order_comp[1], order_comp[4], order_comp[6])
-        return ('UKNOWN', 'UKNOWN', 'UKNOWN')
+        return ('UNKNOWN', 'UNKNOWN', 'UNKNOWN')
 
     def extract_hostile_moves(self, nation: str):
         """
