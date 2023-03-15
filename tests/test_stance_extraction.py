@@ -11,10 +11,10 @@ class StanceTester(StanceExtraction):
     """Need to make `get_stance` non-abstract for testing."""
 
     def get_stance(self, log: Any, messages: Any) -> Dict[str, Dict[str, float]]:
-        return super().get_stance(log, messages)
+        return super().get_stance(log, messages)  # type: ignore[safe-super]
 
 
-def test_extract_terr():
+def test_extract_terr() -> None:
     game = Game()
     my_id = "FRANCE"
     stance = StanceTester(my_id, game)
@@ -31,7 +31,7 @@ def test_extract_terr():
     }
 
 
-def test_get_prev_m_phase():
+def test_get_prev_m_phase() -> None:
     start_state = {
         "timestamp": ANY,
         "zobrist_hash": "1919110489198082658",
@@ -162,7 +162,7 @@ def test_get_prev_m_phase():
     }
 
 
-def test_get_stance():
+def test_get_stance() -> None:
     game = Game()
     my_id = "FRANCE"
     stance = StanceTester(my_id, game)

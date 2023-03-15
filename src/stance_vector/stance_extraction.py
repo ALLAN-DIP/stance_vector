@@ -3,10 +3,12 @@ __email__ = ""
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
+from typing import Any, Dict, List, Optional, Set, Tuple, Union, overload
 
-from diplomacy import Game
+from diplomacy import Game, GamePhaseData
 from diplomacy.utils import strings
 import numpy as np
+from typing_extensions import Literal
 
 """
     Stance vector modules
@@ -22,6 +24,13 @@ class StanceExtraction(ABC):
     Abstract Base Class for stance vector extraction
     """
 
+    identity: str
+    nations: List[str]
+    current_round: int
+    territories: Dict[str, List[str]]
+    stance: Dict[str, Dict[str, float]]
+    game: Game
+
     def __init__(self, my_identity: str, game: Game) -> None:
         self.identity = my_identity
         self.nations = list(game.get_map_power_names())
@@ -30,13 +39,13 @@ class StanceExtraction(ABC):
         self.stance = {n: {k: 0.1 for k in self.nations} for n in self.nations}
         self.game = game
 
-    def extract_terr(self):
+    def extract_terr(self) -> Dict[str, List[str]]:
         """
         Extract current terrirories for each nation from
            game_rec: the turn-level JSON log of a game
         """
 
-        def unit2loc(units):
+        def unit2loc(units: str) -> List[str]:
             locs = []
             for u in units:
                 locs.append(u[2:5])
@@ -51,7 +60,7 @@ class StanceExtraction(ABC):
         }
         return terr
 
-    def get_prev_m_phase(self):
+    def get_prev_m_phase(self) -> GamePhaseData:
         phase_hist = self.game.get_phase_history()
         prev_m_phase_name = None
         for phase_data in reversed(phase_hist):
@@ -67,7 +76,7 @@ class StanceExtraction(ABC):
         return prev_m_phase
 
     @abstractmethod
-    def get_stance(self, log, messages) -> dict:
+    def get_stance(self, log: Any, messages: Any) -> Dict[str, Dict[str, float]]:
         """
         Abstract method to extract stance of nation n on nation k,
         for all pairs of nations n, k at the current round, given
@@ -93,20 +102,31 @@ class ActionBasedStance(StanceExtraction):
         + gamma2 * count(k's unrealized hostile moves)
     """
 
+    alpha1: float
+    alpha2: float
+    discount: float
+    beta1: float
+    beta2: float
+    gamma1: float
+    gamma2: float
+    end_game_flip: bool
+    year_threshold: int
+    random_betrayal: bool
+
     def __init__(
         self,
-        my_identity,
-        game,
-        invasion_coef=1.0,
-        conflict_coef=0.5,
-        invasive_support_coef=1.0,
-        conflict_support_coef=0.5,
-        friendly_coef=1.0,
-        unrealized_coef=1.0,
-        discount_factor=0.5,
-        end_game_flip=True,
-        year_threshold=1918,
-        random_betrayal=True,
+        my_identity: str,
+        game: Game,
+        invasion_coef: float = 1.0,
+        conflict_coef: float = 0.5,
+        invasive_support_coef: float = 1.0,
+        conflict_support_coef: float = 0.5,
+        friendly_coef: float = 1.0,
+        unrealized_coef: float = 1.0,
+        discount_factor: float = 0.5,
+        end_game_flip: bool = True,
+        year_threshold: int = 1918,
+        random_betrayal: bool = True,
     ) -> None:
         super().__init__(my_identity, game)
         # hyperparametes weighting different actions
@@ -121,7 +141,7 @@ class ActionBasedStance(StanceExtraction):
         self.year_threshold = year_threshold
         self.random_betrayal = random_betrayal
 
-    def __game_deepcopy__(self, game):
+    def __game_deepcopy__(self, game: Game) -> None:
         """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
         if game.__class__.__name__ != "Game":
             cls = list(game.__class__.__bases__)[0]
@@ -150,7 +170,7 @@ class ActionBasedStance(StanceExtraction):
         result.role = strings.SERVER_TYPE
         self.game = result
 
-    def order_parser(self, order: str):
+    def order_parser(self, order: str) -> Tuple[str, ...]:
         """
         Dipnet order syntax based on
         https://docs.google.com/document/d/16RODa6KDX7vNNooBdciI4NqSVN31lToto3MLTNcEHk0/edit
@@ -177,7 +197,7 @@ class ActionBasedStance(StanceExtraction):
                 return ("CONVOY", order_comp[1], order_comp[4], order_comp[6])
         return ("UNKNOWN", "UNKNOWN", "UNKNOWN")
 
-    def extract_hostile_moves(self, nation: str):
+    def extract_hostile_moves(self, nation: str) -> Tuple[Dict[str, float], List[str], List[str]]:
         """
         Extract hostile moves toward a nation and evaluate
         the hostility scores it holds to other nations
@@ -188,7 +208,7 @@ class ActionBasedStance(StanceExtraction):
             hostile_moves: a list of hostile moves against the given nation
             conflict_moves: a list of conflict moves against the given nation
         """
-        hostility = {n: 0 for n in self.nations}
+        hostility: Dict[str, float] = {n: 0 for n in self.nations}
         hostile_moves = []
         conflit_moves = []
 
@@ -229,7 +249,9 @@ class ActionBasedStance(StanceExtraction):
 
         return hostility, hostile_moves, conflit_moves
 
-    def extract_hostile_supports(self, nation, hostile_mov, conflit_mov):
+    def extract_hostile_supports(
+        self, nation: str, hostile_mov: List[str], conflit_mov: List[str]
+    ) -> Tuple[Dict[str, float], List[str], List[str]]:
         """
         Extract hostile support toward a nation and evaluate
         the hostility scores it holds to other nations
@@ -242,7 +264,7 @@ class ActionBasedStance(StanceExtraction):
             hostile_supports: list of hostile supports against the given nation
             conflit_supports: list of conflict supports against the given nation
         """
-        hostility = {n: 0 for n in self.nations}
+        hostility: Dict[str, float] = {n: 0 for n in self.nations}
         hostile_supports = []
         conflit_supports = []
         m_phase_data = self.get_prev_m_phase()
@@ -275,7 +297,7 @@ class ActionBasedStance(StanceExtraction):
 
         return hostility, hostile_supports, conflit_supports
 
-    def extract_friendly_supports(self, nation):
+    def extract_friendly_supports(self, nation: str) -> Tuple[Dict[str, float], List[str]]:
         """
         Extract friendly support toward a nation and evaluate
         the friend scores it holds to other nations
@@ -285,7 +307,7 @@ class ActionBasedStance(StanceExtraction):
             friendship: dict of friend scores of the given nation
             friendly_supports: list of friendly supports for the given nation
         """
-        friendship = {n: 0 for n in self.nations}
+        friendship: Dict[str, float] = {n: 0 for n in self.nations}
         friendly_supports = []
         m_phase_data = self.get_prev_m_phase()
         # extract others' friendly SUPPORT
@@ -313,7 +335,7 @@ class ActionBasedStance(StanceExtraction):
 
         return friendship, friendly_supports
 
-    def extract_unrealized_hostile_moves(self, nation: str):
+    def extract_unrealized_hostile_moves(self, nation: str) -> Tuple[Dict[str, float], Set[str]]:
         """
         Extract unrealized hostile moves toward a nation and evaluate
         the friendship scores it holds to other nations
@@ -322,8 +344,8 @@ class ActionBasedStance(StanceExtraction):
             friendship:
             unrealized_hostile_moves: a list of potential hostile moves against the given nation
         """
-        friendship = {n: 0 for n in self.nations}
-        unrealized_hostile_moves = []
+        friendship: Dict[str, float] = {n: 0 for n in self.nations}
+        unrealized_hostile_moves: List[Any] = []
 
         m_phase_data = self.get_prev_m_phase()
 
@@ -360,7 +382,21 @@ class ActionBasedStance(StanceExtraction):
 
         return friendship, adj_pairs
 
-    def get_stance(self, game, message=None, verbose=False):
+    @overload
+    def get_stance(  # type: ignore[misc]
+        self, game: Game, message: Any = ..., verbose: Literal[False] = ...
+    ) -> Dict[str, Dict[str, float]]:
+        ...
+
+    @overload
+    def get_stance(
+        self, game: Game, message: Any = ..., verbose: Literal[True] = ...
+    ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, str]]]:
+        ...
+
+    def get_stance(  # type: ignore[misc]
+        self, game: Game, message: Any = None, verbose: bool = False
+    ) -> Union[Dict[str, Dict[str, float]], Tuple[Dict[str, Dict[str, float]], Dict[str, str]]]:
         """
         Extract turn-level objective stance of nation n on nation k.
             game_rec: the turn-level JSON log of a game,
@@ -496,9 +532,9 @@ class ActionBasedStance(StanceExtraction):
                         k, self.stance[n][k]
                     )
 
-            return self.stance, log
+            return self.stance, log  # type: ignore[return-value]
 
-    def update_stance(self, my_id, opp_id, value):
+    def update_stance(self, my_id: str, opp_id: str, value: float) -> None:
         """
         Force update the stance value
         could be used when receiving ally proposal
@@ -514,12 +550,15 @@ class ScoreBasedStance(StanceExtraction):
         sign(my score - k's score)
     """
 
+    scores: Optional[Dict[str, int]]
+    stance: Optional[Dict[str, Dict[str, float]]]  # type: ignore[assignment]
+
     def __init__(self, my_identity: str, game: Game) -> None:
         super().__init__(my_identity, game)
         self.scores = None
         self.stance = None
 
-    def extract_scores(self):
+    def extract_scores(self) -> Dict[str, int]:
         """
         Extract scores at the end of each round.
             game_rec: the turn-level JSON log of a game,
@@ -530,7 +569,7 @@ class ScoreBasedStance(StanceExtraction):
             scores[n] = len(self.game.powers[n].centers) if self.game.powers[n].centers else 0
         return scores
 
-    def get_stance(self):
+    def get_stance(self) -> Dict[str, Dict[str, float]]:  # type: ignore[override]
         """
         Extract turn-level subjective stance of nation n on nation k.
             game_rec: the turn-level JSON log of a game,

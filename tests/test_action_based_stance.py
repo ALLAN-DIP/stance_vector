@@ -5,7 +5,7 @@ from pytest import approx
 from stance_vector import ActionBasedStance
 
 
-def test_order_parser():
+def test_order_parser() -> None:
     game = Game()
     my_id = "FRANCE"
     action_stance = ActionBasedStance(my_id, game, discount_factor=0.5)
@@ -14,7 +14,7 @@ def test_order_parser():
     assert parsed_order == ("UNKNOWN", "UNKNOWN", "UNKNOWN")
 
 
-def test_get_stance_non_verbose():
+def test_get_stance_non_verbose() -> None:
     np.random.seed(0)
 
     game = Game()
@@ -39,7 +39,7 @@ def test_get_stance_non_verbose():
     }
 
 
-def test_get_stance_long_game():
+def test_get_stance_long_game() -> None:
     np.random.seed(0)
 
     game = Game()
@@ -247,7 +247,7 @@ def test_get_stance_long_game():
     }
 
 
-def test_update_stance():
+def test_update_stance() -> None:
     game = Game()
     my_id = "FRANCE"
     action_stance = ActionBasedStance(my_id, game, discount_factor=0.5)
