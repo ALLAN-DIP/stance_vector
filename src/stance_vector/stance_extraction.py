@@ -2,13 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
 from diplomacy import Game, GamePhaseData
-import numpy as np
 
 
 class StanceExtraction(ABC):
-    """
-    Abstract Base Class for stance vector extraction
-    """
+    """Abstract Base Class for stance vector extraction."""
 
     identity: str
     nations: List[str]
@@ -19,31 +16,28 @@ class StanceExtraction(ABC):
 
     def __init__(self, my_identity: str, game: Game) -> None:
         self.identity = my_identity
-        self.nations = list(game.get_map_power_names())
+        self.nations = sorted(game.get_map_power_names())
         self.current_round = 0
         self.territories = {n: [] for n in self.nations}
         self.stance = {n: {k: 0.1 for k in self.nations} for n in self.nations}
         self.game = game
 
     def extract_terr(self) -> Dict[str, List[str]]:
-        """
-        Extract current terrirories for each nation from
-           game_rec: the turn-level JSON log of a game
-        """
+        """Extract current territories for each nation from the turn-level JSON log of a game."""
 
         def unit2loc(units: str) -> List[str]:
-            locs = []
-            for u in units:
-                locs.append(u[2:5])
-            return locs
+            return [unit[2:5] for unit in units]
 
-        # obtain orderable location from the previous state
+        # Obtain orderable location from the previous state
         m_phase_data = self.get_prev_m_phase()
-        terr = {n: unit2loc(m_phase_data.state["units"][n]) for n in self.nations}
-        terr = {n: terr[n] + unit2loc(m_phase_data.state["retreats"][n]) for n in self.nations}
-        terr = {
-            n: list(np.unique(terr[n] + m_phase_data.state["centers"][n])) for n in self.nations
-        }
+        terr = {}
+        for nation in self.nations:
+            locs = (
+                unit2loc(m_phase_data.state["units"][nation])
+                + unit2loc(m_phase_data.state["retreats"][nation])
+                + m_phase_data.state["centers"][nation]
+            )
+            terr[nation] = sorted(set(locs))
         return terr
 
     def get_prev_m_phase(self) -> GamePhaseData:
