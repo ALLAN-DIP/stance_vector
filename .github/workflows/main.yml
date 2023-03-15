@@ -1,0 +1,44 @@
+name: main
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - test-ci
+permissions:
+  contents: read
+# If you push a fix while CI is running, this should cancel the currently running CI job to avoid
+# wasting CI minutes on a check we don't need anymore.
+#
+# See: https://docs.github.com/en/actions/using-jobs/using-concurrency
+concurrency:
+  group: ci-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  ci-checks:
+    runs-on: ubuntu-22.04
+    env:
+      PYTHON_VERSION: "3.7"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "${{ env.PYTHON_VERSION }}"
+      - name: Cache pre-commit environments
+        uses: actions/cache@v3
+        with:
+          key: precommit-${{ env.PYTHON_VERSION }}-${{ hashFiles('.pre-commit-config.yaml') }}-${{ hashFiles('.github/workflows/main.yml') }}
+          path: ~/.cache/pre-commit/
+      - name: Update PyPA tools
+        # Later versions of `setuptools` do not work properly
+        run: pip install --upgrade pip==23.0.1 setuptools==66.1.1 wheel==0.38.4
+      - name: Install project
+        run: pip install -e .[dev]
+      - name: Run pre-commit checks
+        run: pre-commit run --all-files
+      - name: Run tests
+        run: pytest
