@@ -52,18 +52,19 @@ class StanceExtraction(ABC):
         return terr
 
     def get_prev_m_phase(self):
-        prev_m_phase_name = None
         phase_hist = self.game.get_phase_history()
-        for i in range(len(phase_hist) - 1, -1, -1):
-            if phase_hist[i].name[-1] == "M":
-                prev_m_phase_name = phase_hist[i].name
+        prev_m_phase_name = None
+        for phase_data in reversed(phase_hist):
+            if phase_data.name.endswith("M"):
+                prev_m_phase_name = phase_data.name
                 break
         if prev_m_phase_name:
-            return self.game.get_phase_history(
-                prev_m_phase_name, prev_m_phase_name, self.game.role
-            )[0]
+            prev_m_phase = self.game.get_phase_from_history(prev_m_phase_name, self.game.role)
         else:
-            return None
+            prev_m_phase = self.game.get_phase_data()
+            # Remove private messages between other powers
+            prev_m_phase.messages = self.game.filter_messages(prev_m_phase.messages, self.game.role)
+        return prev_m_phase
 
     @abstractmethod
     def get_stance(self, log, messages) -> dict:

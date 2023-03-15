@@ -105,7 +105,21 @@ def test_get_prev_m_phase():
     my_id = "FRANCE"
     stance = StanceTester(my_id, game)
     prev_phase = stance.get_prev_m_phase()
-    assert prev_phase is None
+    assert prev_phase.to_dict() == {
+        "name": "S1901M",
+        "state": start_state,
+        "orders": {
+            "AUSTRIA": None,
+            "ENGLAND": None,
+            "FRANCE": None,
+            "GERMANY": None,
+            "ITALY": None,
+            "RUSSIA": None,
+            "TURKEY": None,
+        },
+        "results": {},
+        "messages": [],
+    }
     game.process()
     prev_phase = stance.get_prev_m_phase()
     assert prev_phase.to_dict() == {
