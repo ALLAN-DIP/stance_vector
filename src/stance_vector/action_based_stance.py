@@ -1,10 +1,10 @@
 from copy import deepcopy
 from itertools import product
-from typing import Any, Dict, List, Set, Tuple, Union, overload
+import random
+from typing import Any, Dict, List, Optional, Set, Tuple, Union, overload
 
 from diplomacy import Game
 from diplomacy.utils import strings
-import numpy as np
 from typing_extensions import Literal
 
 from .stance_extraction import StanceExtraction
@@ -33,6 +33,7 @@ class ActionBasedStance(StanceExtraction):
     end_game_flip: bool
     year_threshold: int
     random_betrayal: bool
+    random: random.Random
 
     def __init__(
         self,
@@ -48,6 +49,7 @@ class ActionBasedStance(StanceExtraction):
         end_game_flip: bool = True,
         year_threshold: int = 1918,
         random_betrayal: bool = True,
+        random_seed: Optional[int] = None,
     ) -> None:
         super().__init__(my_identity, game)
         # hyperparametes weighting different actions
@@ -61,6 +63,7 @@ class ActionBasedStance(StanceExtraction):
         self.end_game_flip = end_game_flip
         self.year_threshold = year_threshold
         self.random_betrayal = random_betrayal
+        self.random = random.Random(random_seed)
 
     def __game_deepcopy__(self, game: Game) -> None:
         """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
@@ -383,7 +386,7 @@ class ActionBasedStance(StanceExtraction):
                     if self.stance[n][k] < 0:
                         all_possitive = False
                 if all_possitive:
-                    flip_k = np.random.choice([k for k in self.nations if k != n])
+                    flip_k = self.random.choice([k for k in self.nations if k != n])
                     self.stance[n][flip_k] = -1
                     flipped[n][flip_k] = True
 

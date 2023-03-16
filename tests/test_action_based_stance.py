@@ -1,8 +1,9 @@
 from diplomacy import Game
-import numpy as np
 from pytest import approx
 
 from stance_vector import ActionBasedStance
+
+RANDOM_SEED = 0
 
 
 def test_order_parser() -> None:
@@ -15,11 +16,9 @@ def test_order_parser() -> None:
 
 
 def test_get_stance_non_verbose() -> None:
-    np.random.seed(0)
-
     game = Game()
     my_id = "FRANCE"
-    action_stance = ActionBasedStance(my_id, game, discount_factor=0.5)
+    action_stance = ActionBasedStance(my_id, game, discount_factor=0.5, random_seed=RANDOM_SEED)
 
     # S1901M
     assert game.get_current_phase() == "S1901M"
@@ -40,11 +39,11 @@ def test_get_stance_non_verbose() -> None:
 
 
 def test_get_stance_long_game() -> None:
-    np.random.seed(0)
-
     game = Game()
     my_id = "FRANCE"
-    action_stance = ActionBasedStance(my_id, game, discount_factor=0.5, year_threshold=1902)
+    action_stance = ActionBasedStance(
+        my_id, game, discount_factor=0.5, year_threshold=1902, random_seed=RANDOM_SEED
+    )
 
     # S1901M
     assert game.get_current_phase() == "S1901M"
