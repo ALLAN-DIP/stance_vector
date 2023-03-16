@@ -52,7 +52,7 @@ class ActionBasedStance(StanceExtraction):
         random_seed: Optional[int] = None,
     ) -> None:
         super().__init__(my_identity, game)
-        # hyperparametes weighting different actions
+        # hyperparameters weighting different actions
         self.alpha1 = invasion_coef
         self.alpha2 = conflict_coef
         self.discount = discount_factor
@@ -134,7 +134,7 @@ class ActionBasedStance(StanceExtraction):
         """
         hostility: Dict[str, float] = {n: 0 for n in self.nations}
         hostile_moves = []
-        conflit_moves = []
+        conflict_moves = []
 
         # extract my target cities
 
@@ -169,28 +169,28 @@ class ActionBasedStance(StanceExtraction):
                     # seize the same city
                     elif target in my_targets:
                         hostility[opp] += self.alpha2
-                        conflit_moves.append(unit + "-" + target)
+                        conflict_moves.append(unit + "-" + target)
 
-        return hostility, hostile_moves, conflit_moves
+        return hostility, hostile_moves, conflict_moves
 
     def extract_hostile_supports(
-        self, nation: str, hostile_mov: List[str], conflit_mov: List[str]
+        self, nation: str, hostile_mov: List[str], conflict_mov: List[str]
     ) -> Tuple[Dict[str, float], List[str], List[str]]:
         """
         Extract hostile support toward a nation and evaluate
         the hostility scores it holds to other nations
             nation: standing point
             hostile_mov: a list of hostile moves against the given nation
-            conflit_mov: a list of conflict moves against the given nation
+            conflict_mov: a list of conflict moves against the given nation
             game_rec: the turn-level JSON log of a game
         Returns
             hostility: dict of hostility support scores of the given nation
             hostile_supports: list of hostile supports against the given nation
-            conflit_supports: list of conflict supports against the given nation
+            conflict_supports: list of conflict supports against the given nation
         """
         hostility: Dict[str, float] = {n: 0 for n in self.nations}
         hostile_supports = []
-        conflit_supports = []
+        conflict_supports = []
         m_phase_data = self.get_prev_m_phase()
 
         # extract other's hostile MOVEs
@@ -215,11 +215,11 @@ class ActionBasedStance(StanceExtraction):
                             hostility[opp] += self.beta1
                             hostile_supports.append(unit + ":" + source + "-" + target)
                         # support an attack to seize the same city
-                        elif target in conflit_mov:
+                        elif target in conflict_mov:
                             hostility[opp] += self.beta2
-                            conflit_supports.append(unit + ":" + source + "-" + target)
+                            conflict_supports.append(unit + ":" + source + "-" + target)
 
-        return hostility, hostile_supports, conflit_supports
+        return hostility, hostile_supports, conflict_supports
 
     def extract_friendly_supports(self, nation: str) -> Tuple[Dict[str, float], List[str]]:
         """
@@ -333,16 +333,18 @@ class ActionBasedStance(StanceExtraction):
         self.territories = self.extract_terr()
 
         # extract hostile moves
-        hostility_to, hostile_mov_to, conflit_mov_to = {}, {}, {}
+        hostility_to, hostile_mov_to, conflict_mov_to = {}, {}, {}
         for n in self.nations:
-            hostility_to[n], hostile_mov_to[n], conflit_mov_to[n] = self.extract_hostile_moves(n)
+            hostility_to[n], hostile_mov_to[n], conflict_mov_to[n] = self.extract_hostile_moves(n)
 
         # extract hostile supports
-        hostility_s_to, hostile_sup_to, conflit_sup_to = {}, {}, {}
+        hostility_s_to, hostile_sup_to, conflict_sup_to = {}, {}, {}
         for n in self.nations:
-            hostility_s_to[n], hostile_sup_to[n], conflit_sup_to[n] = self.extract_hostile_supports(
-                n, hostile_mov_to[n], conflit_mov_to[n]
-            )
+            (
+                hostility_s_to[n],
+                hostile_sup_to[n],
+                conflict_sup_to[n],
+            ) = self.extract_hostile_supports(n, hostile_mov_to[n], conflict_mov_to[n])
 
         # extract friendly supports
         friendship_to, friendly_sup_to = {}, {}
@@ -368,7 +370,7 @@ class ActionBasedStance(StanceExtraction):
             for n in self.nations
         }
 
-        # simple heuristic to make all other coutries enermy
+        # simple heuristic to make all other countries enemies
         if self.end_game_flip:
             m_phase_data = self.get_prev_m_phase()
             if int(m_phase_data.name[1:5]) > self.year_threshold:
@@ -377,15 +379,15 @@ class ActionBasedStance(StanceExtraction):
                         if self.stance[n][k] > 0:
                             self.stance[n][k] = -1
 
-        # randomly chose one enermy if stance are all postivie
+        # randomly chose one enemy if stance are all positive
         flipped = {n: {k: False for k in self.nations} for n in self.nations}
         if self.random_betrayal:
             for n in self.nations:
-                all_possitive = True
+                all_positive = True
                 for k in self.nations:
                     if self.stance[n][k] < 0:
-                        all_possitive = False
-                if all_possitive:
+                        all_positive = False
+                if all_positive:
                     flip_k = self.random.choice([k for k in self.nations if k != n])
                     self.stance[n][flip_k] = -1
                     flipped[n][flip_k] = True
