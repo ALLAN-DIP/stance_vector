@@ -1,4 +1,5 @@
 from copy import deepcopy
+from itertools import product
 from typing import Any, Dict, List, Set, Tuple, Union, overload
 
 from diplomacy import Game
@@ -388,71 +389,46 @@ class ActionBasedStance(StanceExtraction):
 
         if not verbose:
             return self.stance
-        else:
-            log = {n: {k: "" for k in self.nations} for n in self.nations}
-            for n in self.nations:
-                for k in self.nations:
-                    if k == n:
-                        continue
-                    total = (
-                        -hostility_to[n][k]
-                        - hostility_s_to[n][k]
-                        + friendship_to[n][k]
-                        + friendship_ur_to[n][k]
-                    )
-                    log[n][k] += "My stance to {} decays from {} to {} by a factor {}.".format(
-                        k,
-                        self.stance_prev[n][k],
-                        self.discount * self.stance_prev[n][k],
-                        self.discount,
-                    )
-                    if hostility_to[n][k] != 0:
-                        log[n][
-                            k
-                        ] += "\nMy stance to {} decreases by {} because of their hostile/conflict moves towards me.".format(
-                            k, hostility_to[n][k]
-                        )
-                    if hostility_s_to[n][k] != 0:
-                        log[n][
-                            k
-                        ] += "\nMy stance to {} decreases by {} because of their hostile/conflict support.".format(
-                            k, hostility_s_to[n][k]
-                        )
-                    if friendship_to[n][k] != 0:
-                        log[n][
-                            k
-                        ] += "\nMy stance to {} increases by {} because of receiving their support.".format(
-                            k, friendship_to[n][k]
-                        )
-                    if friendship_ur_to[n][k] > 0:
-                        log[n][
-                            k
-                        ] += "\nMy stance to {} increases by {} because they could attack but didn't.".format(
-                            k, friendship_ur_to[n][k]
-                        )
-                    if friendship_ur_to[n][k] < 0:
-                        log[n][
-                            k
-                        ] += "\nMy stance to {} decreases by {} because of they could be a threat.".format(
-                            k, friendship_ur_to[n][k]
-                        )
-                    if self.random_betrayal and flipped[n][k]:
-                        log[n][
-                            k
-                        ] += "\nMy stance to {} becomes {} because I plan to betray {} to break the peace.".format(
-                            k, self.stance[n][k], k
-                        )
-                    if self.end_game_flip and (int(m_phase_data.name[1:5]) > self.year_threshold):
-                        log[n][
-                            k
-                        ] += "\nMy stance to {} becomes {}, because I plan to betray everyone after year {}.".format(
-                            k, friendship_ur_to[n][k], m_phase_data.name[1:5]
-                        )
-                    log[n][k] += "\n My final stance score to {} is {}.".format(
-                        k, self.stance[n][k]
-                    )
 
-            return self.stance, log  # type: ignore[return-value]
+        log = {n: {k: "" for k in self.nations} for n in self.nations}
+        for n, k in product(self.nations, repeat=2):
+            if k == n:
+                continue
+            lines = [
+                f"My stance to {k} decays from {self.stance_prev[n][k]} to {self.discount * self.stance_prev[n][k]} by a factor {self.discount}."
+            ]
+            if hostility_to[n][k] != 0:
+                lines.append(
+                    f"My stance to {k} decreases by {hostility_to[n][k]} because of their hostile/conflict moves towards me."
+                )
+            if hostility_s_to[n][k] != 0:
+                lines.append(
+                    f"My stance to {k} decreases by {hostility_s_to[n][k]} because of their hostile/conflict support."
+                )
+            if friendship_to[n][k] != 0:
+                lines.append(
+                    f"My stance to {k} increases by {friendship_to[n][k]} because of receiving their support."
+                )
+            if friendship_ur_to[n][k] > 0:
+                lines.append(
+                    f"My stance to {k} increases by {friendship_ur_to[n][k]} because they could attack but didn't."
+                )
+            elif friendship_ur_to[n][k] < 0:
+                lines.append(
+                    f"My stance to {k} decreases by {friendship_ur_to[n][k]} because of they could be a threat."
+                )
+            if self.random_betrayal and flipped[n][k]:
+                lines.append(
+                    f"My stance to {k} becomes {self.stance[n][k]} because I plan to betray {k} to break the peace."
+                )
+            if self.end_game_flip and (int(m_phase_data.name[1:5]) > self.year_threshold):
+                lines.append(
+                    f"My stance to {k} becomes {friendship_ur_to[n][k]}, because I plan to betray everyone after year {m_phase_data.name[1:5]}."
+                )
+            lines.append(f"My final stance score to {k} is {self.stance[n][k]}.")
+            log[n][k] = "\n".join(lines)
+
+        return self.stance, log  # type: ignore[return-value]
 
     def update_stance(self, my_id: str, opp_id: str, value: float) -> None:
         """
