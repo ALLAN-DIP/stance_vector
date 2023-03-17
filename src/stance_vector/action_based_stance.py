@@ -67,7 +67,7 @@ class ActionBasedStance(StanceExtraction):
 
     def __game_deepcopy__(self, game: Game) -> None:
         """Fast deep copy implementation, from Paquette's game engine https://github.com/diplomacy/diplomacy"""
-        if game.__class__.__name__ != "Game":
+        if game.__class__.__name__ != Game.__name__:
             cls = list(game.__class__.__bases__)[0]
             result = cls.__new__(cls)
         else:
@@ -104,22 +104,22 @@ class ActionBasedStance(StanceExtraction):
         """
         order_comp = order.split()
         if len(order_comp) == 3:
-            if order_comp[2] in ["H"]:
-                return ("HOLD", order_comp[1], order_comp[1])
+            if order_comp[2] == "H":
+                return "HOLD", order_comp[1], order_comp[1]
         elif len(order_comp) == 4:
-            if order_comp[2] in ["-", "R"]:
-                return ("MOVE", order_comp[1], order_comp[1], order_comp[3])
+            if order_comp[2] in {"-", "R"}:
+                return "MOVE", order_comp[1], order_comp[1], order_comp[3]
         elif len(order_comp) == 5:
-            if order_comp[2] in ["-"]:
-                return ("MOVE", order_comp[1], order_comp[1], order_comp[3])
-            elif order_comp[2] in ["S"]:
-                return ("SUPPORT", order_comp[1], order_comp[4])
+            if order_comp[2] == "-":
+                return "MOVE", order_comp[1], order_comp[1], order_comp[3]
+            elif order_comp[2] == "S":
+                return "SUPPORT", order_comp[1], order_comp[4]
         elif len(order_comp) == 7:
-            if order_comp[2] in ["S"]:
-                return ("SUPPORT", order_comp[1], order_comp[4], order_comp[6])
-            elif order_comp[2] in ["C"]:
-                return ("CONVOY", order_comp[1], order_comp[4], order_comp[6])
-        return ("UNKNOWN", "UNKNOWN", "UNKNOWN")
+            if order_comp[2] == "S":
+                return "SUPPORT", order_comp[1], order_comp[4], order_comp[6]
+            elif order_comp[2] == "C":
+                return "CONVOY", order_comp[1], order_comp[4], order_comp[6]
+        return "UNKNOWN", "UNKNOWN", "UNKNOWN"
 
     def extract_hostile_moves(self, nation: str) -> Tuple[Dict[str, float], List[str], List[str]]:
         """
@@ -165,11 +165,11 @@ class ActionBasedStance(StanceExtraction):
                     # invasion or cut support/convoy
                     if target in self.territories[nation]:
                         hostility[opp] += self.alpha1
-                        hostile_moves.append(unit + "-" + target)
+                        hostile_moves.append(f"{unit}-{target}")
                     # seize the same city
                     elif target in my_targets:
                         hostility[opp] += self.alpha2
-                        conflict_moves.append(unit + "-" + target)
+                        conflict_moves.append(f"{unit}-{target}")
 
         return hostility, hostile_moves, conflict_moves
 
@@ -203,21 +203,21 @@ class ActionBasedStance(StanceExtraction):
                 continue
             for order in opp_orders:
                 order = self.order_parser(order)
-                if order[0] in ["SUPPORT", "CONVOY"]:
+                if order[0] in {"SUPPORT", "CONVOY"}:
                     unit = order[1]
                     source = order[2]
                     # if not supporting a HOLD
                     if len(order) > 3:
                         target = order[3]
-                        support = source + "-" + target
+                        support = f"{source}-{target}"
                         # support invasion or support a cut support/convoy
                         if support in hostile_mov:
                             hostility[opp] += self.beta1
-                            hostile_supports.append(unit + ":" + source + "-" + target)
+                            hostile_supports.append(f"{unit}:{source}-{target}")
                         # support an attack to seize the same city
                         elif target in conflict_mov:
                             hostility[opp] += self.beta2
-                            conflict_supports.append(unit + ":" + source + "-" + target)
+                            conflict_supports.append(f"{unit}:{source}-{target}")
 
         return hostility, hostile_supports, conflict_supports
 
@@ -241,21 +241,21 @@ class ActionBasedStance(StanceExtraction):
                 continue
             opp_orders = m_phase_data.orders[opp]
 
-            if len(opp_orders) == 0:
+            if not opp_orders:
                 continue
             for order in opp_orders:
                 order = self.order_parser(order)
                 unit = order[1]
-                if order[0] in ["SUPPORT", "CONVOY"]:
+                if order[0] in {"SUPPORT", "CONVOY"}:
                     source = order[2]
                     # any kind of support to me
                     if source in self.territories[nation]:
                         friendship[opp] += self.gamma1
                         if len(order) > 3:
                             target = order[3]
-                            friendly_supports.append(unit + ":" + source + "-" + target)
+                            friendly_supports.append(f"{unit}:{source}-{target}")
                         else:
-                            friendly_supports.append(unit + ":" + source)
+                            friendly_supports.append(f"{unit}:{source}")
 
         return friendship, friendly_supports
 
@@ -284,8 +284,8 @@ class ActionBasedStance(StanceExtraction):
             for opp_unit in opp_units:
                 for loc in self.territories[nation]:
                     if opp_unit[0] == "A":
-                        if self.game._abuts("A", opp_unit[2:5], "-", loc):
-                            adj_pairs.add(opp_unit[2:5] + "-" + loc)
+                        if self.game.map.abuts("A", opp_unit[2:5], "-", loc):
+                            adj_pairs.add(f"{opp_unit[2:5]}-{loc}")
 
             if len(adj_pairs) > 0:
                 friendship[opp] = self.gamma2
@@ -299,7 +299,7 @@ class ActionBasedStance(StanceExtraction):
                     unit = order[1]
                     # invasion or cut support/convoy
                     if target in self.territories[nation]:
-                        hostile_order = unit + "-" + target
+                        hostile_order = f"{unit}-{target}"
                         if hostile_order in adj_pairs:
                             adj_pairs.remove(hostile_order)
                             friendship[opp] = 0
@@ -371,9 +371,10 @@ class ActionBasedStance(StanceExtraction):
         }
 
         # simple heuristic to make all other countries enemies
+        m_phase_data = self.get_prev_m_phase()
+        m_phase_year = int(m_phase_data.name[1:5])
         if self.end_game_flip:
-            m_phase_data = self.get_prev_m_phase()
-            if int(m_phase_data.name[1:5]) > self.year_threshold:
+            if m_phase_year > self.year_threshold:
                 for n in self.nations:
                     for k in self.nations:
                         if self.stance[n][k] > 0:
@@ -383,11 +384,7 @@ class ActionBasedStance(StanceExtraction):
         flipped = {n: {k: False for k in self.nations} for n in self.nations}
         if self.random_betrayal:
             for n in self.nations:
-                all_positive = True
-                for k in self.nations:
-                    if self.stance[n][k] < 0:
-                        all_positive = False
-                if all_positive:
+                if all(self.stance[n][k] >= 0 for k in self.nations):
                     flip_k = self.random.choice([k for k in self.nations if k != n])
                     self.stance[n][flip_k] = -1
                     flipped[n][flip_k] = True
@@ -426,7 +423,7 @@ class ActionBasedStance(StanceExtraction):
                 lines.append(
                     f"My stance to {k} becomes {self.stance[n][k]} because I plan to betray {k} to break the peace."
                 )
-            if self.end_game_flip and (int(m_phase_data.name[1:5]) > self.year_threshold):
+            if self.end_game_flip and m_phase_year > self.year_threshold:
                 lines.append(
                     f"My stance to {k} becomes {friendship_ur_to[n][k]}, because I plan to betray everyone after year {m_phase_data.name[1:5]}."
                 )
