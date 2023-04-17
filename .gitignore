@@ -1,7 +1,9 @@
 # Python files
 *.egg*
+.coverage
 /.mypy_cache/
 /.pytest_cache/
+/htmlcov/
 __pycache__/
 
 # IDE files
