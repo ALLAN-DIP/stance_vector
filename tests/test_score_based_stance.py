@@ -3,7 +3,7 @@ from diplomacy import Game
 from stance_vector import ScoreBasedStance
 
 
-def test_game():
+def test_game() -> None:
     game = Game()
     my_id = "FRANCE"
     score_stance = ScoreBasedStance(my_id, game)
