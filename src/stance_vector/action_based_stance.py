@@ -1,4 +1,5 @@
 from copy import deepcopy
+from enum import Enum, auto
 from itertools import product
 import random
 from typing import Any, Dict, List, Optional, Set, Tuple, Union, overload
@@ -8,6 +9,13 @@ from diplomacy.utils import strings
 from typing_extensions import Literal
 
 from .stance_extraction import StanceExtraction
+
+
+class FlipReason(str, Enum):
+    """Reasons for a betrayal."""
+
+    END_GAME = auto()
+    RANDOM = auto()
 
 
 class ActionBasedStance(StanceExtraction):
@@ -370,6 +378,8 @@ class ActionBasedStance(StanceExtraction):
             for n in self.nations
         }
 
+        flipped = {n: {k: "" for k in self.nations} for n in self.nations}
+
         # simple heuristic to make all other countries enemies
         m_phase_data = self.get_prev_m_phase()
         m_phase_year = int(m_phase_data.name[1:5])
@@ -379,15 +389,15 @@ class ActionBasedStance(StanceExtraction):
                     for k in self.nations:
                         if self.stance[n][k] > 0:
                             self.stance[n][k] = -1
+                            flipped[n][k] = FlipReason.END_GAME
 
         # randomly chose one enemy if stance are all positive
-        flipped = {n: {k: False for k in self.nations} for n in self.nations}
         if self.random_betrayal:
             for n in self.nations:
                 if all(self.stance[n][k] >= 0 for k in self.nations):
                     flip_k = self.random.choice([k for k in self.nations if k != n])
                     self.stance[n][flip_k] = -1
-                    flipped[n][flip_k] = True
+                    flipped[n][flip_k] = FlipReason.RANDOM
 
         if not verbose:
             return self.stance
@@ -397,37 +407,37 @@ class ActionBasedStance(StanceExtraction):
             if k == n:
                 continue
             lines = [
-                f"My stance to {k} decays from {self.stance_prev[n][k]} to {self.discount * self.stance_prev[n][k]} by a factor {self.discount}."
+                f"My stance to {k} decays from {float(self.stance_prev[n][k]):0.2} to {float(self.discount * self.stance_prev[n][k]):0.2} by a factor {float(self.discount):0.2}."
             ]
             if hostility_to[n][k] != 0:
                 lines.append(
-                    f"My stance to {k} decreases by {hostility_to[n][k]} because of their hostile/conflict moves towards me."
+                    f"My stance to {k} decreases by {float(hostility_to[n][k]):0.2} because of their hostile/conflict moves towards me."
                 )
             if hostility_s_to[n][k] != 0:
                 lines.append(
-                    f"My stance to {k} decreases by {hostility_s_to[n][k]} because of their hostile/conflict support."
+                    f"My stance to {k} decreases by {float(hostility_s_to[n][k]):0.2} because of their hostile/conflict support."
                 )
             if friendship_to[n][k] != 0:
                 lines.append(
-                    f"My stance to {k} increases by {friendship_to[n][k]} because of receiving their support."
+                    f"My stance to {k} increases by {float(friendship_to[n][k]):0.2} because of receiving their support."
                 )
             if friendship_ur_to[n][k] > 0:
                 lines.append(
-                    f"My stance to {k} increases by {friendship_ur_to[n][k]} because they could attack but didn't."
+                    f"My stance to {k} increases by {float(friendship_ur_to[n][k]):0.2} because they could attack but didn't."
                 )
             elif friendship_ur_to[n][k] < 0:
                 lines.append(
-                    f"My stance to {k} decreases by {friendship_ur_to[n][k]} because of they could be a threat."
+                    f"My stance to {k} decreases by {float(friendship_ur_to[n][k]):0.2} because of they could be a threat."
                 )
-            if self.random_betrayal and flipped[n][k]:
+            if flipped[n][k] == FlipReason.RANDOM:
                 lines.append(
-                    f"My stance to {k} becomes {self.stance[n][k]} because I plan to betray {k} to break the peace."
+                    f"My stance to {k} becomes {float(self.stance[n][k]):0.2} because I plan to betray {k} to break the peace."
                 )
-            if self.end_game_flip and m_phase_year > self.year_threshold:
+            elif flipped[n][k] == FlipReason.END_GAME:
                 lines.append(
-                    f"My stance to {k} becomes {friendship_ur_to[n][k]}, because I plan to betray everyone after year {m_phase_data.name[1:5]}."
+                    f"My stance to {k} becomes {float(self.stance[n][k]):0.2}, because I plan to betray everyone after year {self.year_threshold}."
                 )
-            lines.append(f"My final stance score to {k} is {self.stance[n][k]}.")
+            lines.append(f"My final stance score to {k} is {float(self.stance[n][k]):0.2}.")
             log[n][k] = "\n".join(lines)
 
         return self.stance, log  # type: ignore[return-value]
