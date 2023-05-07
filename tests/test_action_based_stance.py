@@ -62,7 +62,7 @@ def test_get_stance_long_game() -> None:
         "TURKEY": 0.05,
     }
     assert stance_log["FRANCE"] == {
-        "AUSTRIA": "My stance to AUSTRIA decays from 0.1 to 0.05 by a factor 0.5.\nMy stance to AUSTRIA becomes -1 because I plan to betray AUSTRIA to break the peace.\nMy final stance score to AUSTRIA is -1.",
+        "AUSTRIA": "My stance to AUSTRIA decays from 0.1 to 0.05 by a factor 0.5.\nMy stance to AUSTRIA becomes -1.0 because I plan to betray AUSTRIA to break the peace.\nMy final stance score to AUSTRIA is -1.0.",
         "ENGLAND": "My stance to ENGLAND decays from 0.1 to 0.05 by a factor 0.5.\nMy final stance score to ENGLAND is 0.05.",
         "FRANCE": "",
         "GERMANY": "My stance to GERMANY decays from 0.1 to 0.05 by a factor 0.5.\nMy final stance score to GERMANY is 0.05.",
@@ -88,10 +88,10 @@ def test_get_stance_long_game() -> None:
         "TURKEY": 0.025,
     }
     assert stance_log["FRANCE"] == {
-        "AUSTRIA": "My stance to AUSTRIA decays from -1 to -0.5 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.5.",
+        "AUSTRIA": "My stance to AUSTRIA decays from -1.0 to -0.5 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.5.",
         "ENGLAND": "My stance to ENGLAND decays from 0.05 to 0.025 by a factor 0.5.\nMy final stance score to ENGLAND is 0.025.",
         "FRANCE": "",
-        "GERMANY": "My stance to GERMANY decays from 0.05 to 0.025 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy final stance score to GERMANY is -0.975.",
+        "GERMANY": "My stance to GERMANY decays from 0.05 to 0.025 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy final stance score to GERMANY is -0.97.",
         "ITALY": "My stance to ITALY decays from 0.05 to 0.025 by a factor 0.5.\nMy final stance score to ITALY is 0.025.",
         "RUSSIA": "My stance to RUSSIA decays from 0.05 to 0.025 by a factor 0.5.\nMy final stance score to RUSSIA is 0.025.",
         "TURKEY": "My stance to TURKEY decays from 0.05 to 0.025 by a factor 0.5.\nMy final stance score to TURKEY is 0.025.",
@@ -114,12 +114,12 @@ def test_get_stance_long_game() -> None:
     }
     assert stance_log["FRANCE"] == {
         "AUSTRIA": "My stance to AUSTRIA decays from -0.5 to -0.25 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.25.",
-        "ENGLAND": "My stance to ENGLAND decays from 0.025 to 0.0125 by a factor 0.5.\nMy final stance score to ENGLAND is 0.0125.",
+        "ENGLAND": "My stance to ENGLAND decays from 0.025 to 0.013 by a factor 0.5.\nMy final stance score to ENGLAND is 0.013.",
         "FRANCE": "",
-        "GERMANY": "My stance to GERMANY decays from -0.975 to -0.4875 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy final stance score to GERMANY is -1.4875.",
-        "ITALY": "My stance to ITALY decays from 0.025 to 0.0125 by a factor 0.5.\nMy final stance score to ITALY is 0.0125.",
-        "RUSSIA": "My stance to RUSSIA decays from 0.025 to 0.0125 by a factor 0.5.\nMy final stance score to RUSSIA is 0.0125.",
-        "TURKEY": "My stance to TURKEY decays from 0.025 to 0.0125 by a factor 0.5.\nMy final stance score to TURKEY is 0.0125.",
+        "GERMANY": "My stance to GERMANY decays from -0.97 to -0.49 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy final stance score to GERMANY is -1.5.",
+        "ITALY": "My stance to ITALY decays from 0.025 to 0.013 by a factor 0.5.\nMy final stance score to ITALY is 0.013.",
+        "RUSSIA": "My stance to RUSSIA decays from 0.025 to 0.013 by a factor 0.5.\nMy final stance score to RUSSIA is 0.013.",
+        "TURKEY": "My stance to TURKEY decays from 0.025 to 0.013 by a factor 0.5.\nMy final stance score to TURKEY is 0.013.",
     }
 
     # S1902M
@@ -139,13 +139,13 @@ def test_get_stance_long_game() -> None:
         "TURKEY": 0.00625,
     }
     assert stance_log["FRANCE"] == {
-        "AUSTRIA": "My stance to AUSTRIA decays from -0.25 to -0.125 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.125.",
-        "ENGLAND": "My stance to ENGLAND decays from 0.0125 to 0.00625 by a factor 0.5.\nMy stance to ENGLAND increases by 2.0 because of receiving their support.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy final stance score to ENGLAND is 3.00625.",
+        "AUSTRIA": "My stance to AUSTRIA decays from -0.25 to -0.12 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.12.",
+        "ENGLAND": "My stance to ENGLAND decays from 0.013 to 0.0063 by a factor 0.5.\nMy stance to ENGLAND increases by 2.0 because of receiving their support.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy final stance score to ENGLAND is 3.0.",
         "FRANCE": "",
-        "GERMANY": "My stance to GERMANY decays from -1.4875 to -0.74375 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy final stance score to GERMANY is -1.74375.",
-        "ITALY": "My stance to ITALY decays from 0.0125 to 0.00625 by a factor 0.5.\nMy final stance score to ITALY is 0.00625.",
-        "RUSSIA": "My stance to RUSSIA decays from 0.0125 to 0.00625 by a factor 0.5.\nMy final stance score to RUSSIA is 0.00625.",
-        "TURKEY": "My stance to TURKEY decays from 0.0125 to 0.00625 by a factor 0.5.\nMy final stance score to TURKEY is 0.00625.",
+        "GERMANY": "My stance to GERMANY decays from -1.5 to -0.74 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy final stance score to GERMANY is -1.7.",
+        "ITALY": "My stance to ITALY decays from 0.013 to 0.0063 by a factor 0.5.\nMy final stance score to ITALY is 0.0063.",
+        "RUSSIA": "My stance to RUSSIA decays from 0.013 to 0.0063 by a factor 0.5.\nMy final stance score to RUSSIA is 0.0063.",
+        "TURKEY": "My stance to TURKEY decays from 0.013 to 0.0063 by a factor 0.5.\nMy final stance score to TURKEY is 0.0063.",
     }
 
     # F1902M
@@ -165,13 +165,13 @@ def test_get_stance_long_game() -> None:
         "TURKEY": 0.003125,
     }
     assert stance_log["FRANCE"] == {
-        "AUSTRIA": "My stance to AUSTRIA decays from -0.125 to -0.0625 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.0625.",
-        "ENGLAND": "My stance to ENGLAND decays from 3.00625 to 1.503125 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because of receiving their support.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy final stance score to ENGLAND is 3.503125.",
+        "AUSTRIA": "My stance to AUSTRIA decays from -0.12 to -0.062 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.062.",
+        "ENGLAND": "My stance to ENGLAND decays from 3.0 to 1.5 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because of receiving their support.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy final stance score to ENGLAND is 3.5.",
         "FRANCE": "",
-        "GERMANY": "My stance to GERMANY decays from -1.74375 to -0.871875 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict support.\nMy stance to GERMANY increases by 1.0 because of receiving their support.\nMy final stance score to GERMANY is -1.8718750000000002.",
-        "ITALY": "My stance to ITALY decays from 0.00625 to 0.003125 by a factor 0.5.\nMy final stance score to ITALY is 0.003125.",
-        "RUSSIA": "My stance to RUSSIA decays from 0.00625 to 0.003125 by a factor 0.5.\nMy final stance score to RUSSIA is 0.003125.",
-        "TURKEY": "My stance to TURKEY decays from 0.00625 to 0.003125 by a factor 0.5.\nMy final stance score to TURKEY is 0.003125.",
+        "GERMANY": "My stance to GERMANY decays from -1.7 to -0.87 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict support.\nMy stance to GERMANY increases by 1.0 because of receiving their support.\nMy final stance score to GERMANY is -1.9.",
+        "ITALY": "My stance to ITALY decays from 0.0063 to 0.0031 by a factor 0.5.\nMy final stance score to ITALY is 0.0031.",
+        "RUSSIA": "My stance to RUSSIA decays from 0.0063 to 0.0031 by a factor 0.5.\nMy final stance score to RUSSIA is 0.0031.",
+        "TURKEY": "My stance to TURKEY decays from 0.0063 to 0.0031 by a factor 0.5.\nMy final stance score to TURKEY is 0.0031.",
     }
 
     # From this point, only need to test end-of-game flip, so no actions are taken
@@ -190,13 +190,13 @@ def test_get_stance_long_game() -> None:
         "TURKEY": 0.0015625,
     }
     assert stance_log["FRANCE"] == {
-        "AUSTRIA": "My stance to AUSTRIA decays from -0.0625 to -0.03125 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.03125.",
-        "ENGLAND": "My stance to ENGLAND decays from 3.503125 to 1.7515625 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because of receiving their support.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy final stance score to ENGLAND is 3.7515625.",
+        "AUSTRIA": "My stance to AUSTRIA decays from -0.062 to -0.031 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.031.",
+        "ENGLAND": "My stance to ENGLAND decays from 3.5 to 1.8 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because of receiving their support.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy final stance score to ENGLAND is 3.8.",
         "FRANCE": "",
-        "GERMANY": "My stance to GERMANY decays from -1.8718750000000002 to -0.9359375000000001 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict support.\nMy stance to GERMANY increases by 1.0 because of receiving their support.\nMy final stance score to GERMANY is -1.9359375.",
-        "ITALY": "My stance to ITALY decays from 0.003125 to 0.0015625 by a factor 0.5.\nMy final stance score to ITALY is 0.0015625.",
-        "RUSSIA": "My stance to RUSSIA decays from 0.003125 to 0.0015625 by a factor 0.5.\nMy final stance score to RUSSIA is 0.0015625.",
-        "TURKEY": "My stance to TURKEY decays from 0.003125 to 0.0015625 by a factor 0.5.\nMy final stance score to TURKEY is 0.0015625.",
+        "GERMANY": "My stance to GERMANY decays from -1.9 to -0.94 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict support.\nMy stance to GERMANY increases by 1.0 because of receiving their support.\nMy final stance score to GERMANY is -1.9.",
+        "ITALY": "My stance to ITALY decays from 0.0031 to 0.0016 by a factor 0.5.\nMy final stance score to ITALY is 0.0016.",
+        "RUSSIA": "My stance to RUSSIA decays from 0.0031 to 0.0016 by a factor 0.5.\nMy final stance score to RUSSIA is 0.0016.",
+        "TURKEY": "My stance to TURKEY decays from 0.0031 to 0.0016 by a factor 0.5.\nMy final stance score to TURKEY is 0.0016.",
     }
 
     # W1902A
@@ -213,13 +213,13 @@ def test_get_stance_long_game() -> None:
         "TURKEY": 0.00078125,
     }
     assert stance_log["FRANCE"] == {
-        "AUSTRIA": "My stance to AUSTRIA decays from -0.03125 to -0.015625 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.015625.",
-        "ENGLAND": "My stance to ENGLAND decays from 3.7515625 to 1.87578125 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because of receiving their support.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy final stance score to ENGLAND is 3.87578125.",
+        "AUSTRIA": "My stance to AUSTRIA decays from -0.031 to -0.016 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.016.",
+        "ENGLAND": "My stance to ENGLAND decays from 3.8 to 1.9 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because of receiving their support.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy final stance score to ENGLAND is 3.9.",
         "FRANCE": "",
-        "GERMANY": "My stance to GERMANY decays from -1.9359375 to -0.96796875 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict support.\nMy stance to GERMANY increases by 1.0 because of receiving their support.\nMy final stance score to GERMANY is -1.9679687499999998.",
-        "ITALY": "My stance to ITALY decays from 0.0015625 to 0.00078125 by a factor 0.5.\nMy final stance score to ITALY is 0.00078125.",
-        "RUSSIA": "My stance to RUSSIA decays from 0.0015625 to 0.00078125 by a factor 0.5.\nMy final stance score to RUSSIA is 0.00078125.",
-        "TURKEY": "My stance to TURKEY decays from 0.0015625 to 0.00078125 by a factor 0.5.\nMy final stance score to TURKEY is 0.00078125.",
+        "GERMANY": "My stance to GERMANY decays from -1.9 to -0.97 by a factor 0.5.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict moves towards me.\nMy stance to GERMANY decreases by 1.0 because of their hostile/conflict support.\nMy stance to GERMANY increases by 1.0 because of receiving their support.\nMy final stance score to GERMANY is -2.0.",
+        "ITALY": "My stance to ITALY decays from 0.0016 to 0.00078 by a factor 0.5.\nMy final stance score to ITALY is 0.00078.",
+        "RUSSIA": "My stance to RUSSIA decays from 0.0016 to 0.00078 by a factor 0.5.\nMy final stance score to RUSSIA is 0.00078.",
+        "TURKEY": "My stance to TURKEY decays from 0.0016 to 0.00078 by a factor 0.5.\nMy final stance score to TURKEY is 0.00078.",
     }
 
     # S1903M
@@ -236,13 +236,13 @@ def test_get_stance_long_game() -> None:
         "TURKEY": -1,
     }
     assert stance_log["FRANCE"] == {
-        "AUSTRIA": "My stance to AUSTRIA decays from -0.015625 to -0.0078125 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.0078125.",
-        "ENGLAND": "My stance to ENGLAND decays from 3.87578125 to 1.937890625 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy stance to ENGLAND becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to ENGLAND is -1.",
+        "AUSTRIA": "My stance to AUSTRIA decays from -0.016 to -0.0078 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.0078.",
+        "ENGLAND": "My stance to ENGLAND decays from 3.9 to 1.9 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy stance to ENGLAND becomes -1.0, because I plan to betray everyone after year 1902.\nMy final stance score to ENGLAND is -1.0.",
         "FRANCE": "",
-        "GERMANY": "My stance to GERMANY decays from -1.9679687499999998 to -0.9839843749999999 by a factor 0.5.\nMy stance to GERMANY increases by 1.0 because they could attack but didn't.\nMy stance to GERMANY becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to GERMANY is -1.",
-        "ITALY": "My stance to ITALY decays from 0.00078125 to 0.000390625 by a factor 0.5.\nMy stance to ITALY becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to ITALY is -1.",
-        "RUSSIA": "My stance to RUSSIA decays from 0.00078125 to 0.000390625 by a factor 0.5.\nMy stance to RUSSIA becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to RUSSIA is -1.",
-        "TURKEY": "My stance to TURKEY decays from 0.00078125 to 0.000390625 by a factor 0.5.\nMy stance to TURKEY becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to TURKEY is -1.",
+        "GERMANY": "My stance to GERMANY decays from -2.0 to -0.98 by a factor 0.5.\nMy stance to GERMANY increases by 1.0 because they could attack but didn't.\nMy stance to GERMANY becomes -1.0, because I plan to betray everyone after year 1902.\nMy final stance score to GERMANY is -1.0.",
+        "ITALY": "My stance to ITALY decays from 0.00078 to 0.00039 by a factor 0.5.\nMy stance to ITALY becomes -1.0, because I plan to betray everyone after year 1902.\nMy final stance score to ITALY is -1.0.",
+        "RUSSIA": "My stance to RUSSIA decays from 0.00078 to 0.00039 by a factor 0.5.\nMy stance to RUSSIA becomes -1.0, because I plan to betray everyone after year 1902.\nMy final stance score to RUSSIA is -1.0.",
+        "TURKEY": "My stance to TURKEY decays from 0.00078 to 0.00039 by a factor 0.5.\nMy stance to TURKEY becomes -1.0, because I plan to betray everyone after year 1902.\nMy final stance score to TURKEY is -1.0.",
     }
 
 

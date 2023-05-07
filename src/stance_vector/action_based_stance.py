@@ -407,37 +407,37 @@ class ActionBasedStance(StanceExtraction):
             if k == n:
                 continue
             lines = [
-                f"My stance to {k} decays from {self.stance_prev[n][k]} to {self.discount * self.stance_prev[n][k]} by a factor {self.discount}."
+                f"My stance to {k} decays from {float(self.stance_prev[n][k]):0.2} to {float(self.discount * self.stance_prev[n][k]):0.2} by a factor {float(self.discount):0.2}."
             ]
             if hostility_to[n][k] != 0:
                 lines.append(
-                    f"My stance to {k} decreases by {hostility_to[n][k]} because of their hostile/conflict moves towards me."
+                    f"My stance to {k} decreases by {float(hostility_to[n][k]):0.2} because of their hostile/conflict moves towards me."
                 )
             if hostility_s_to[n][k] != 0:
                 lines.append(
-                    f"My stance to {k} decreases by {hostility_s_to[n][k]} because of their hostile/conflict support."
+                    f"My stance to {k} decreases by {float(hostility_s_to[n][k]):0.2} because of their hostile/conflict support."
                 )
             if friendship_to[n][k] != 0:
                 lines.append(
-                    f"My stance to {k} increases by {friendship_to[n][k]} because of receiving their support."
+                    f"My stance to {k} increases by {float(friendship_to[n][k]):0.2} because of receiving their support."
                 )
             if friendship_ur_to[n][k] > 0:
                 lines.append(
-                    f"My stance to {k} increases by {friendship_ur_to[n][k]} because they could attack but didn't."
+                    f"My stance to {k} increases by {float(friendship_ur_to[n][k]):0.2} because they could attack but didn't."
                 )
             elif friendship_ur_to[n][k] < 0:
                 lines.append(
-                    f"My stance to {k} decreases by {friendship_ur_to[n][k]} because of they could be a threat."
+                    f"My stance to {k} decreases by {float(friendship_ur_to[n][k]):0.2} because of they could be a threat."
                 )
             if flipped[n][k] == FlipReason.RANDOM:
                 lines.append(
-                    f"My stance to {k} becomes {self.stance[n][k]} because I plan to betray {k} to break the peace."
+                    f"My stance to {k} becomes {float(self.stance[n][k]):0.2} because I plan to betray {k} to break the peace."
                 )
             elif flipped[n][k] == FlipReason.END_GAME:
                 lines.append(
-                    f"My stance to {k} becomes {self.stance[n][k]}, because I plan to betray everyone after year {self.year_threshold}."
+                    f"My stance to {k} becomes {float(self.stance[n][k]):0.2}, because I plan to betray everyone after year {self.year_threshold}."
                 )
-            lines.append(f"My final stance score to {k} is {self.stance[n][k]}.")
+            lines.append(f"My final stance score to {k} is {float(self.stance[n][k]):0.2}.")
             log[n][k] = "\n".join(lines)
 
         return self.stance, log  # type: ignore[return-value]
