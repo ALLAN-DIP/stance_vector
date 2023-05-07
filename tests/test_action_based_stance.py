@@ -236,13 +236,13 @@ def test_get_stance_long_game() -> None:
         "TURKEY": -1,
     }
     assert stance_log["FRANCE"] == {
-        "AUSTRIA": "My stance to AUSTRIA decays from -0.015625 to -0.0078125 by a factor 0.5.\nMy stance to AUSTRIA becomes 0, because I plan to betray everyone after year 1903.\nMy final stance score to AUSTRIA is -0.0078125.",
-        "ENGLAND": "My stance to ENGLAND decays from 3.87578125 to 1.937890625 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy stance to ENGLAND becomes 1.0, because I plan to betray everyone after year 1903.\nMy final stance score to ENGLAND is -1.",
+        "AUSTRIA": "My stance to AUSTRIA decays from -0.015625 to -0.0078125 by a factor 0.5.\nMy final stance score to AUSTRIA is -0.0078125.",
+        "ENGLAND": "My stance to ENGLAND decays from 3.87578125 to 1.937890625 by a factor 0.5.\nMy stance to ENGLAND increases by 1.0 because they could attack but didn't.\nMy stance to ENGLAND becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to ENGLAND is -1.",
         "FRANCE": "",
-        "GERMANY": "My stance to GERMANY decays from -1.9679687499999998 to -0.9839843749999999 by a factor 0.5.\nMy stance to GERMANY increases by 1.0 because they could attack but didn't.\nMy stance to GERMANY becomes 1.0, because I plan to betray everyone after year 1903.\nMy final stance score to GERMANY is -1.",
-        "ITALY": "My stance to ITALY decays from 0.00078125 to 0.000390625 by a factor 0.5.\nMy stance to ITALY becomes 0, because I plan to betray everyone after year 1903.\nMy final stance score to ITALY is -1.",
-        "RUSSIA": "My stance to RUSSIA decays from 0.00078125 to 0.000390625 by a factor 0.5.\nMy stance to RUSSIA becomes 0, because I plan to betray everyone after year 1903.\nMy final stance score to RUSSIA is -1.",
-        "TURKEY": "My stance to TURKEY decays from 0.00078125 to 0.000390625 by a factor 0.5.\nMy stance to TURKEY becomes 0, because I plan to betray everyone after year 1903.\nMy final stance score to TURKEY is -1.",
+        "GERMANY": "My stance to GERMANY decays from -1.9679687499999998 to -0.9839843749999999 by a factor 0.5.\nMy stance to GERMANY increases by 1.0 because they could attack but didn't.\nMy stance to GERMANY becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to GERMANY is -1.",
+        "ITALY": "My stance to ITALY decays from 0.00078125 to 0.000390625 by a factor 0.5.\nMy stance to ITALY becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to ITALY is -1.",
+        "RUSSIA": "My stance to RUSSIA decays from 0.00078125 to 0.000390625 by a factor 0.5.\nMy stance to RUSSIA becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to RUSSIA is -1.",
+        "TURKEY": "My stance to TURKEY decays from 0.00078125 to 0.000390625 by a factor 0.5.\nMy stance to TURKEY becomes -1, because I plan to betray everyone after year 1902.\nMy final stance score to TURKEY is -1.",
     }
 
 
